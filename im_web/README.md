@@ -1,4 +1,4 @@
-# IM-SERVER
+# IM-WEB
 
 #### 一、介绍
 IM-CHAT的客户端
