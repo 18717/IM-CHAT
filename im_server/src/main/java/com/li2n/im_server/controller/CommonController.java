@@ -12,27 +12,27 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
- * 用户基本信息 前端控制器
+ * 公共接口 前端控制器
  * </p>
  *
  * @author Li2N
  * @since 2022-03-08
  */
 @RestController
-@RequestMapping("/user")
-public class UserInfoController {
+@RequestMapping("/common")
+public class CommonController {
 
     @Autowired
     private IUserInfoService userService;
 
-    @ApiOperation(value = "验证用户名是否已经存在")
+    @ApiOperation(value = "检查用户名是否已经存在")
     @GetMapping("/check/username/{username}")
     public Boolean check(@PathVariable String username) {
         return userService.selectOne(username) != null;
     }
 
-    @ApiOperation(value = "上传文件到七牛云并返回文件URL")
-    @PostMapping("/common/upload")
+    @ApiOperation(value = "上传文件")
+    @PostMapping("/upload/file")
     public RespBeanModel uploadQiniu(MultipartFile file, @RequestParam("type") String type) {
         String folder = null;
         if ("avatar".equals(type)) {

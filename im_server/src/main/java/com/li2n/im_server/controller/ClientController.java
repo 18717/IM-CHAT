@@ -27,18 +27,6 @@ public class ClientController {
     @Autowired
     private RedisCache redisCache;
 
-    @ApiOperation(value = "登录")
-    @PostMapping("/login")
-    public RespBeanModel clientLogin(@RequestBody LoginModel model, HttpServletRequest request) {
-        return userService.clientLogin(model, request);
-    }
-
-    @ApiOperation(value = "注销登录")
-    @PostMapping("/logout")
-    public RespBeanModel clientLogout() {
-        return userService.clientLogout();
-    }
-
     @ApiOperation(value = "当前登录用户信息")
     @GetMapping("/login/info")
     public UserInfo getUserInfo(Principal principal) {
