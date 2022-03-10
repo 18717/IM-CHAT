@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.MessageTotalMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.MessageTotal">
+        <id column="id" property="id" />
+        <result column="mkey" property="mkey" />
+        <result column="send_username" property="sendUsername" />
+        <result column="receive_username" property="receiveUsername" />
+        <result column="message_content_type" property="messageContentType" />
+        <result column="content" property="content" />
+        <result column="file_url" property="fileUrl" />
+        <result column="send_time" property="sendTime" />
+        <result column="is_online" property="online" />
+        <result column="is_self" property="self" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, mkey, send_username, receive_username, message_content_type, content, file_url, send_time, is_online, is_self
+    </sql>
+
+    <!-- 根据msgKey查询指定聊天记录 -->
+    <select id="selectByMsgKey" resultMap="BaseResultMap">
+        SELECT *
+        FROM message_total msg
+        WHERE msg.mkey = #{send}
+           OR msg.mkey = #{receive}
+        ORDER BY id ASC
+    </select>
+
+    <!-- 查询所有的聊天记录 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT *
+        FROM message_total
+        ORDER BY id ASC
+    </select>
+
+    <!-- 查询有关登录用户所有的消息记录 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT *
+        FROM message_total msg
+        WHERE msg.send_time = #{username}
+           OR msg.receive_username = #{username}
+        ORDER BY id ASC
+    </select>
+
+</mapper>

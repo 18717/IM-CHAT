@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.NoticeServerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeServer">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="send_username" property="sendUsername" />
+        <result column="content" property="content" />
+        <result column="message_content_type" property="messageContentType" />
+        <result column="receive_username" property="receiveUsername" />
+        <result column="push_num" property="pushNum" />
+        <result column="send_time" property="sendTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, title, send_username, content, message_content_type, receive_username, push_num, send_time
+    </sql>
+
+</mapper>

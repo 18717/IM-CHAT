@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.UserInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.UserInfo">
+        <id column="id" property="id" />
+        <id column="uid" property="uid" />
+        <result column="username" property="username" />
+        <result column="pwd" property="password" />
+        <result column="avatar" property="avatar"/>
+        <result column="nickname" property="nickname"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_admin" property="admin"/>
+        <result column="is_login" property="login"/>
+        <result column="is_disable" property="disable"/>
+        <result column="is_deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, uid, username, pwd, avatar, nickname, gender, email, create_time, update_time, is_admin, is_login, is_disable, is_deleted
+    </sql>
+
+    <!-- 分页查询用户（不包含登录用户） -->
+    <select id="selectListByPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM user_info u
+        WHERE
+        u.username != #{username}
+        <if test="null != params.uid and '' != params.uid">
+            AND u.uid LIKE CONCAT('%', #{params.uid}, '%')
+        </if>
+        <if test="null != params.nickname and '' != params.nickname">
+            AND u.nickname LIKE CONCAT('%', #{params.nickname}, '%')
+        </if>
+        <if test="null != params.email and '' != params.email">
+            AND u.email LIKE CONCAT('%', #{params.email}, '%')
+        </if>
+    </select>
+
+    <!-- 普通查询用户 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT *
+        FROM user_info u
+        WHERE
+        1
+        <if test="null != params.uid and '' != params.uid">
+            AND u.uid LIKE CONCAT('%', #{params.uid}, '%')
+        </if>
+        <if test="null != params.nickname and '' != params.nickname">
+            AND u.nickname LIKE CONCAT('%', #{params.nickname}, '%')
+        </if>
+        <if test="null != params.email and '' != params.email">
+            AND u.email LIKE CONCAT('%', #{params.email}, '%')
+        </if>
+    </select>
+
+    <!-- 查询某个用户 -->
+    <select id="selectOne" resultMap="BaseResultMap">
+        SELECT *
+        FROM user_info
+        WHERE username = #{username}
+    </select>
+
+</mapper>

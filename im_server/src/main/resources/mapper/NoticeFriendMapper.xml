@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.NoticeFriendMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeFriend">
+        <id column="id" property="id" />
+        <result column="send_username" property="sendUsername" />
+        <result column="receive_username" property="receiveUsername" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="is_confirm" property="confirm" />
+        <result column="is_add" property="add" />
+        <result column="is_del" property="del" />
+        <result column="is_online" property="online" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, send_username, receive_username, title, content, is_confirm, is_add, is_del, is_online, create_time, update_time
+    </sql>
+
+</mapper>
