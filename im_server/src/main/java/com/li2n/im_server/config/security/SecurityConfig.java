@@ -43,7 +43,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * 安全拦截机制
-     *
      * @param http
      * @throws Exception
      */
@@ -75,6 +74,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
+                "/server/login",
+                "/client/login",
+                "/client/register",
+                "/server/logout",
+                "/client/logout",
+                "/client/login/captcha",
+                "/client/register/captcha",
+                "/server/login/captcha",
                 "/css/**",
                 "/js/**",
                 "index.html",
@@ -83,12 +90,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/webjars/**",
                 "/swagger-resources/**",
                 "/v2/api-docs/**",
+                "/client/register/captcha",
                 "/ws/**",
-                "/captcha/**",
-                "/login/**",
-                "/logout/**",
-                "/common/**",
-                "/client/register"
+                "/user/client/check/username/**",
+                "/user/common/upload/avatar"
         );
     }
 
