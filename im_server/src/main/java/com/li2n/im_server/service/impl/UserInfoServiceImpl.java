@@ -389,11 +389,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     /**
      * 添加用户
      * @param userInfo
-     * @param code
      * @return
      */
     @Override
-    public Boolean insert(UserInfo userInfo, String code) {
+    public Boolean insert(UserInfo userInfo) {
         UserInfo user = selectOne(userInfo.getUsername());
         if (user != null) {
             return false;
