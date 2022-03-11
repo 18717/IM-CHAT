@@ -8,7 +8,7 @@
       ref="loginForm" :model="loginForm" label-position="right"
       label-width="70px">
 
-    <h2 class="title">IM-CHAT SERVER LOGIN</h2>
+    <h2 class="title-login">IM-CHAT 即时通讯系统</h2>
     <el-form-item label="用户名" prop="username">
       <el-input type="text" auto-complete="false" v-model="loginForm.username" placeholder="请输入登录名"></el-input>
     </el-form-item>
@@ -35,7 +35,7 @@
 export default {
   name: "Login",
   head: {
-    title: "IM-CHAT SERVER",
+    title: "IM-CHAT 即时通讯系统",
     meta: [
       {name: 'description', content: '服务端登录'}
     ]
@@ -87,7 +87,6 @@ body {
   background: -webkit-linear-gradient(to right, #f0acf7, #acf7f0, #f7f0ac);
   /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   background: linear-gradient(to right, #f0acf7, #acf7f0, #f7f0ac);
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 }
 
 #loginBox {
@@ -101,7 +100,7 @@ body {
   box-shadow: 0 0 25px #cac6c6;
 }
 
-#loginBox .title {
+#loginBox .title-login {
   margin-top: 10px;
   margin-bottom: 25px;
   text-align: center;

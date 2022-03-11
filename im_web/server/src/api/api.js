@@ -5,8 +5,8 @@ import axios from "axios";
 // 请求拦截器
 axios.interceptors.request.use(config => {
     // 如果存在token，请求将携带这个token
-    if (window.sessionStorage.getItem('tokenStr') != null) {
-        config.headers['Authorization'] = window.sessionStorage.getItem('tokenStr');
+    if (window.sessionStorage.getItem('token') != null) {
+        config.headers['Authorization'] = window.sessionStorage.getItem('token');
     }
     return config;
 }, error => {
@@ -61,4 +61,54 @@ export const putRequest = (url, params) => {
 
 export const deleteRequest = (url, params) => {
     return axios.delete(url, params);
+}
+
+Date.prototype.strTime = function(format){
+
+    var o = {
+
+        "M+" :  this.getMonth()+1,  //month
+
+        "d+" :  this.getDate(),     //day
+
+        "h+" :  this.getHours(),    //hour
+
+        "m+" :  this.getMinutes(),  //minute
+
+        "s+" :  this.getSeconds(), //second
+
+        "q+" :  Math.floor((this.getMonth()+3)/3),  //quarter
+
+        "S"  :  this.getMilliseconds() //millisecond
+
+    }
+
+    if(/(y+)/.test(format)) {
+
+        format = format.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+
+    }
+
+    for(var k in o) {
+
+        if(new RegExp("("+ k +")").test(format)) {
+
+            format = format.replace(RegExp.$1, RegExp.$1.length===1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+
+        }
+
+    }
+
+    return format;
+
+}
+
+export const UTCToLocalTimeString =  (d, format) => {
+
+    var  timeOffsetInHours = (new Date().getTimezoneOffset()/60) + 8;
+
+    d.setHours(d.getHours() + timeOffsetInHours);
+
+    return d.strTime(format);
+
 }

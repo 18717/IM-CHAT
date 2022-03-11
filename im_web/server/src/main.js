@@ -11,15 +11,13 @@ Vue.prototype.postRequest = postRequest;
 Vue.prototype.getRequest = getRequest;
 Vue.prototype.putRequest = putRequest;
 Vue.prototype.deleteRequest = deleteRequest;
-
+Vue.prototype.$axios = axios;
+Vue.config.productionTip = false;
 Vue.use(ElementUI);
 Vue.use(VueMeta, {
   keyName: 'head',
 });
 
-Vue.prototype.$axios = axios;
-
-Vue.config.productionTip = false
 
 new Vue({
   router,
