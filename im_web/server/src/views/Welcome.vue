@@ -2,7 +2,7 @@
   <el-main>
     <el-header class="title-welcome"><b>Welcome Login to IM-CHAT SERVER</b></el-header>
     <el-container class="text">
-      <p>尊敬的 <span>IM-CHAT</span> 用户，欢迎登录 IM-CHAT 即时通讯系统。</p>
+      <p>尊敬的 <span>{{ user.nickname }}</span> 用户，欢迎登录 IM-CHAT 即时通讯系统。</p>
       <p>当前北京时间：<span id="bjTime"></span></p>
     </el-container>
   </el-main>
@@ -12,7 +12,20 @@
 import {UTCToLocalTimeString} from "@/api/api";
 
 export default {
-  name: "Welcome"
+  name: "Welcome",
+  data() {
+    return {
+      user: {}
+    }
+  },
+  methods: {
+    init() {
+      this.user = JSON.parse(window.sessionStorage.getItem('login-user'))
+    }
+  },
+  mounted() {
+    this.init();
+  }
 }
 
 setInterval(function () {

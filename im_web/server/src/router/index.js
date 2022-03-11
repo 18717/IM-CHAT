@@ -4,6 +4,13 @@ import Home from '../views/Home.vue'
 import Login from "@/views/Login";
 import Space from "@/views/Space";
 import Welcome from "@/views/Welcome";
+import ToUser from "@/views/notice/ToUser";
+import ToGroup from "@/views/notice/ToGroup";
+import ListUser from "@/views/user/ListUser";
+import InsetUser from "@/views/user/InsetUser";
+import WatchLog from "@/views/log/WatchLog";
+import DownLoadLog from "@/views/log/DownLoadLog";
+import ServerSwitch from "@/views/sys/ServerSwitch";
 
 Vue.use(VueRouter)
 // 解决报错
@@ -41,6 +48,13 @@ const routes = [
     children: [
       {path: "/home", name: "欢迎页", component: Welcome},
       {path: "/space", name: "个人中心", component: Space},
+      {path: "/to-user", name: "指定用户通知", component: ToUser},
+      {path: "/to-group", name: "指定群组通知", component: ToGroup},
+      {path: "/list", name: "用户列表", component: ListUser},
+      {path: "/new-user", name: "添加用户", component: InsetUser},
+      {path: "/watch-log", name: "查看日志", component: WatchLog},
+      {path: "/download-log", name: "下载日志", component: DownLoadLog},
+      {path: "/server-switch", name: "服务器开关", component: ServerSwitch},
     ]
   },
 ]
