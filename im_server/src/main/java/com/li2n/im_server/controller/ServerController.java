@@ -41,8 +41,8 @@ public class ServerController {
 
     @ApiOperation(value = "添加用户")
     @PostMapping("/create/user")
-    public RespBeanModel addUser(UserInfo userInfo, String code) {
-        Boolean insertResult = userService.insert(userInfo, code);
+    public RespBeanModel addUser(@RequestBody UserInfo userInfo) {
+        Boolean insertResult = userService.insert(userInfo);
         if (insertResult) {
             return RespBeanModel.success("添加用户成功");
         } else {
