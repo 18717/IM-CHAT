@@ -53,9 +53,9 @@ public class MessageTotal implements Serializable {
     private LocalDateTime sendTime;
 
     @ApiModelProperty(value = "是否是在线消息")
-    private Integer online;
+    private int online;
 
     @ApiModelProperty(value = "该消息是否是发送出去的")
-    private Integer self;
+    private int self;
 
 }
