@@ -8,7 +8,8 @@
 export default {
   head: {
     titleTemplate(title) {
-      return title;
+      title = typeof title === "function" ? title(this.$store) : title;
+      return title ? 'IM-CHAT 即时通讯系统' : `IM-CHAT 即时通讯系统 - ${title}`;
     }
   },
   name: 'App',
@@ -16,6 +17,8 @@ export default {
 </script>
 
 <style>
-
+body {
+  font-family: "HarmonyOS_Sans_Regular",sans-serif;
+}
 </style>
 
