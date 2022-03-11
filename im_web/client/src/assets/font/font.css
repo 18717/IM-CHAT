@@ -1,0 +1,14 @@
+
+@font-face {
+    font-family: "HarmonyOS_Regular_Italic";
+    src: url('HarmonyOS_Sans_Regular_Italic.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "HarmonyOS_Sans_Regular";
+    src: url('HarmonyOS_Sans_Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
