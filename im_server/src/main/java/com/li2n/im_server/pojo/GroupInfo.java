@@ -47,7 +47,7 @@ public class GroupInfo implements Serializable {
     private String members;
 
     @ApiModelProperty(value = "成员")
-    private Integer memberNum;
+    private int memberNum;
 
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;

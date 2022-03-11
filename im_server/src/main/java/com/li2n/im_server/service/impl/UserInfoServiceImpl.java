@@ -244,8 +244,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         user.setNickname(model.getNickname());
         user.setGender(model.getGender());
         user.setEmail(model.getEmail());
-        user.setDisable(model.getDisable());
-        user.setAdmin(model.getAdmin());
+        // TODO 有朝一日再优化吧
+        if ("true".equals(model.getAdmin())) {
+            user.setAdmin(1);
+        }
+        if ("true".equals(model.getDisable())) {
+            user.setDisable(1);
+        }
         user.setUpdateTime(TimeFormat.getLocalDateTime());
         int updateResult = userMapper.update(user, new QueryWrapper<UserInfo>().eq("username", model.getUsername()));
 

@@ -52,7 +52,7 @@ public class ServerController {
 
     @ApiOperation(value = "更新用户信息")
     @PutMapping("/update/user")
-    public RespBeanModel updateUser(EditUserInfoModel model) {
+    public RespBeanModel updateUser(@RequestBody EditUserInfoModel model) {
         Boolean updateResult = userService.update(model, "login:s-");
         if (updateResult) {
             return RespBeanModel.success("更新数据成功");

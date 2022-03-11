@@ -38,13 +38,13 @@ public class GroupList implements Serializable {
     private String gids;
 
     @ApiModelProperty(value = "创建的群数量")
-    private Integer foundNum;
+    private int foundNum;
 
     @ApiModelProperty(value = "加入的群数量")
-    private Integer joinNum;
+    private int joinNum;
 
     @ApiModelProperty(value = "用户所有的群数量")
-    private Integer totalNum;
+    private int totalNum;
 
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;

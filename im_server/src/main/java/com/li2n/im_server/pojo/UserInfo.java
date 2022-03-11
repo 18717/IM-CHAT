@@ -77,22 +77,22 @@ public class UserInfo implements Serializable, UserDetails {
     @ApiModelProperty(value = "管理员")
     @Getter(value = AccessLevel.NONE)
     @TableField("is_admin")
-    private Integer admin;
+    private int admin;
 
     @ApiModelProperty(value = "登录状态")
     @Getter(value = AccessLevel.NONE)
     @TableField("is_login")
-    private Integer login;
+    private int login;
 
     @ApiModelProperty(value = "账号状态")
     @Getter(value = AccessLevel.NONE)
     @TableField("is_disable")
-    private Integer disable;
+    private int disable;
 
     @ApiModelProperty(value = "逻辑删除")
     @Getter(value = AccessLevel.NONE)
     @TableField("is_deleted")
-    private Integer deleted;
+    private int deleted;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

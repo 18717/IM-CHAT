@@ -44,16 +44,16 @@ public class NoticeFriend implements Serializable {
     private String content;
 
     @ApiModelProperty(value = "是否确认")
-    private Integer confirm;
+    private int confirm;
 
     @ApiModelProperty(value = "是否是添加好友")
-    private Integer add;
+    private int add;
 
     @ApiModelProperty(value = "是否是删除好友")
-    private Integer del;
+    private int del;
 
     @ApiModelProperty(value = "目标是否是在线状态")
-    private Integer online;
+    private int online;
 
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;

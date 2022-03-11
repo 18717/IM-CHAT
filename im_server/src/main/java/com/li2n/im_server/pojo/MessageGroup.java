@@ -50,7 +50,7 @@ public class MessageGroup implements Serializable {
     private LocalDateTime sendTime;
 
     @ApiModelProperty(value = "是否是当前登录用户发送出去的")
-    private Integer self;
+    private int self;
 
 
 }
