@@ -91,10 +91,9 @@ public interface IUserInfoService extends IService<UserInfo> {
     /**
      * 添加用户
      * @param userInfo
-     * @param code
      * @return
      */
-    Boolean insert(UserInfo userInfo, String code);
+    Boolean insert(UserInfo userInfo);
 
     /**
      * 重置用户密码

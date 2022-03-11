@@ -3,7 +3,8 @@
     <el-header>
       <el-row style="height: 61px">
         <el-col :span="12"><h1 style="margin: 0">IM-CHAT 即时通讯系统</h1></el-col>
-        <el-col :span="12" style="text-align: right">
+        <el-col :span="9" style="text-align: right; color: dimgrey">北京时间：<span id="bjTime" style="margin: 0; padding: 0"></span></el-col>
+        <el-col :span="3" style="text-align: right">
 
           <el-dropdown trigger="click">
             <div style="cursor: pointer;">
@@ -24,27 +25,31 @@
       <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
         <el-menu :default-active="$route.path" router>
 
-          <el-menu-item index="/space"><i class="el-icon-s-home"></i>个人中心
+          <el-menu-item index="/space">
+            <i class="el-icon-s-home"></i>个人中心
           </el-menu-item>
-          <el-menu-item index="/notifications"><i class="el-icon-s-comment"></i>消息推送
-          </el-menu-item>
+
+          <el-submenu index="2">
+            <template slot="title"><i class="el-icon-s-comment"></i>系统通知</template>
+            <el-menu-item index="/to-user">指定用户</el-menu-item>
+            <el-menu-item index="/to-group">指定群组</el-menu-item>
+          </el-submenu>
 
           <el-submenu index="3">
             <template slot="title"><i class="el-icon-user-solid"></i>用户管理</template>
-            <el-menu-item index="/list">列表</el-menu-item>
-            <el-menu-item index="/adduser">添加用户</el-menu-item>
+            <el-menu-item index="/list">用户列表</el-menu-item>
+            <el-menu-item index="/new-user">添加用户</el-menu-item>
           </el-submenu>
 
           <el-submenu index="4">
             <template slot="title"><i class="el-icon-s-order"></i>日志管理</template>
-            <el-menu-item index="/watch">查看</el-menu-item>
-            <el-menu-item index="/download">导出</el-menu-item>
+            <el-menu-item index="/watch-log">查看</el-menu-item>
+            <el-menu-item index="/download-log">导出</el-menu-item>
           </el-submenu>
 
           <el-submenu index="5">
             <template slot="title"><i class="el-icon-s-tools"></i>系统管理</template>
-            <el-menu-item index="/role">权限</el-menu-item>
-            <el-menu-item index="/server">服务器</el-menu-item>
+            <el-menu-item index="/server-switch">服务器开关</el-menu-item>
           </el-submenu>
         </el-menu>
       </el-aside>
