@@ -3,7 +3,8 @@
     <el-header>
       <el-row style="height: 61px">
         <el-col :span="12"><h1 style="margin: 0">IM-CHAT 即时通讯系统</h1></el-col>
-        <el-col :span="12" style="text-align: right">
+        <el-col :span="9" style="text-align: right; color: dimgrey">北京时间：<span id="bjTime" style="margin: 0; padding: 0"></span></el-col>
+        <el-col :span="3" style="text-align: right">
 
           <el-dropdown trigger="click">
             <div style="cursor: pointer;">
