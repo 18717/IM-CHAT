@@ -34,8 +34,8 @@ public class EditUserInfoModel {
     @ApiModelProperty(value = "性别", required = true)
     String gender;
     @ApiModelProperty(value = "管理员", required = true)
-    int admin;
+    String admin;
     @ApiModelProperty(value = "是否禁用", required = true)
-    int disable;
+    String disable;
 
 }
