@@ -30,4 +30,13 @@ public class TimeFormat {
         LocalDateTime localDateTime = LocalDateTimeUtil.parse(LocalDateTime.now().toString());
         return LocalDateTimeUtil.format(localDateTime, DatePattern.NORM_DATETIME_PATTERN);
     }
+
+    /**
+     * 解析 yyyy-MM-dd HH:mm:ss 格式时间
+     * @param strTime
+     * @return
+     */
+    public static LocalDateTime stringToLocalDateTime(String strTime) {
+        return LocalDateTimeUtil.parse(strTime, DatePattern.NORM_DATETIME_PATTERN);
+    }
 }
