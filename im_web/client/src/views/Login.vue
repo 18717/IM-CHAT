@@ -26,7 +26,7 @@
         </el-col>
       </el-row>
     </el-form-item>
-    <el-button type="primary" plain style="width: 100%" @click="toLogin">登录</el-button>
+    <el-button type="primary" plain style="width: 100%;border: 0" @click="toLogin">登录</el-button>
     <div class="login-tip">
       <router-link to="reg">
         <el-button type="text" style="text-align: left">还没有账号，前往注册</el-button>

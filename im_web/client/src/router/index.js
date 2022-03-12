@@ -3,6 +3,11 @@ import VueRouter from 'vue-router'
 import Login from "@/views/Login";
 import Home from "@/views/Home";
 import Register from "@/views/Register";
+import Forget from "@/views/Forget";
+import Friend from "@/components/chat/Friend";
+import Group from "@/components/chat/Group";
+import Notice from "@/components/chat/Notice";
+import Setting from "@/components/chat/Setting";
 
 Vue.use(VueRouter)
 
@@ -41,9 +46,20 @@ const routes = [
     component: Login
   },
   {
+    path: '/forget',
+    name: '忘记密码',
+    component: Forget
+  },
+  {
     path: '/home',
     name: '首页',
-    component: Home
+    component: Home,
+    children: [
+      {path: "/friend", name: "好友", component: Friend},
+      {path: "/group", name: "群组", component: Group},
+      {path: "/notice", name: "通知", component: Notice},
+      {path: "/setting", name: "设置", component: Setting},
+    ]
   },
 ]
 
