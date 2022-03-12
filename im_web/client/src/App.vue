@@ -20,4 +20,22 @@ export default {
 body {
   font-family: "HarmonyOS_Sans_Regular", sans-serif;
 }
+
+/*滚动条整体样式*/
+.scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 0;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  /*滚动条里面小方块*/
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  background-color: #c3c3c3;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
 </style>

@@ -3,9 +3,11 @@ package com.li2n.im_server.controller;
 import com.li2n.im_server.pojo.MessageTotal;
 import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.pojo.model.FriendModel;
+import com.li2n.im_server.pojo.model.MessageModel;
 import com.li2n.im_server.service.IMessageOfflineService;
 import com.li2n.im_server.service.IMessageTotalService;
 import com.li2n.im_server.utils.RedisCache;
+import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -33,18 +35,26 @@ public class WebSocketController {
     private IMessageOfflineService iMessageOfflineService;
 
     @MessageMapping("/ws/client/chat")
-    public void handleMsg(Authentication authentication, MessageTotal msg) {
+    public void handleMsg(Authentication authentication, MessageModel model) {
         UserInfo user = (UserInfo) authentication.getPrincipal();
-        String msgKey = user.getUsername() + "@" + msg.getReceiveUsername();
+        String msgKey = user.getUsername() + "@" + model.getReceiveUsername();
+
+        MessageTotal msg = new MessageTotal();
 
         msg.setMkey(msgKey);
+        msg.setSendNickname(user.getNickname());
         msg.setSendUsername(user.getUsername());
+        msg.setReceiveUsername(model.getReceiveUsername());
+        msg.setMessageContentType(model.getMessageContentType());
+        msg.setContent(model.getContent());
+        msg.setFileUrl(model.getFileUrl());
+        msg.setSendTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
+        msg.setSelf(Integer.parseInt(model.getSelf()));
 
-        String chatMsgTo = msg.getReceiveUsername();
-        UserInfo toUser = redisCache.getCacheObject("login:c-" + chatMsgTo);
-        if (!Objects.isNull(toUser)) {
+        UserInfo receiveUser = redisCache.getCacheObject("login:c-" + model.getReceiveUsername());
+        if (!Objects.isNull(receiveUser)) {
             msg.setOnline(1);
-            simpMessagingTemplate.convertAndSendToUser(msg.getReceiveUsername(), "/queue/chat", msg);
+            simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/queue/chat", msg);
         } else {
             msg.setOnline(0);
             iMessageOfflineService.insertMsg(msg);
