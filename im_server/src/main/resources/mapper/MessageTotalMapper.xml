@@ -37,11 +37,11 @@
         ORDER BY id ASC
     </select>
 
-    <!-- 查询有关登录用户所有的消息记录 -->
+    <!-- 查询有关用户所有的消息记录 -->
     <select id="selectByUsername" resultMap="BaseResultMap">
         SELECT *
         FROM message_total msg
-        WHERE msg.send_time = #{username}
+        WHERE msg.send_username = #{username}
            OR msg.receive_username = #{username}
         ORDER BY id ASC
     </select>
