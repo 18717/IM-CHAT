@@ -41,7 +41,7 @@ public class ClientController {
 
     @ApiOperation(value = "注册用户")
     @PostMapping("/register")
-    public RespBeanModel regUser(UserInfo userInfo, String code) {
+    public RespBeanModel regUser(@RequestBody UserInfo userInfo, String code) {
         return userService.clientRegister(userInfo, code);
     }
 

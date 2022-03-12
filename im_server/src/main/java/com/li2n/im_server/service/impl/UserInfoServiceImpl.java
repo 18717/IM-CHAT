@@ -166,12 +166,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         String encode = passwordEncoder.encode(userInfo.getPassword());
 
-        String key = "register-captcha:" + userInfo.getUsername();
+        /*String key = "register-captcha:" + userInfo.getUsername();
         String captcha = redisCache.getCacheObject(key);
         if ("".equals(code) || !captcha.equalsIgnoreCase(code)) {
             return RespBeanModel.error("验证码输入错误，请重新输入!");
         }
-        redisCache.deleteObject(key);
+        redisCache.deleteObject(key);*/
 
         if (selectOne(userInfo.getUsername()) != null) {
             return null;
@@ -189,7 +189,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         }
         initFriendGroup(userInfo.getUsername());
-        return RespBeanModel.success("注册成功", userInfo.getUid());
+        userInfo.setPassword(null);
+        return RespBeanModel.success("注册成功", userInfo);
     }
 
     /**
