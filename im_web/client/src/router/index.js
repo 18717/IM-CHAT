@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from "@/views/Login";
 import Home from "@/views/Home";
+import Register from "@/views/Register";
 
 Vue.use(VueRouter)
 
@@ -29,6 +30,11 @@ VueRouter.prototype.replace = function push (location, onResolve, onReject) {
 
 
 const routes = [
+  {
+    path: '/reg',
+    name: '客户端注册',
+    component: Register
+  },
   {
     path: '/',
     name: '客户端登录',

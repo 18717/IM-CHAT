@@ -5,8 +5,8 @@ import axios from "axios";
 // 请求拦截器
 axios.interceptors.request.use(config => {
     // 如果存在token，请求将携带这个token
-    if (window.sessionStorage.getItem('tokenStr') != null) {
-        config.headers['Authorization'] = window.sessionStorage.getItem('tokenStr');
+    if (window.sessionStorage.getItem('token') != null) {
+        config.headers['Authorization'] = window.sessionStorage.getItem('token');
     }
     return config;
 }, error => {
