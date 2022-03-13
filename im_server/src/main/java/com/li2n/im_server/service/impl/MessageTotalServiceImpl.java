@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.li2n.im_server.mapper.MessageTotalMapper;
 import com.li2n.im_server.pojo.MessageTotal;
+import com.li2n.im_server.pojo.model.MessageModel;
 import com.li2n.im_server.service.IMessageTotalService;
 import com.li2n.im_server.utils.RedisCache;
+import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -88,14 +91,23 @@ public class MessageTotalServiceImpl extends ServiceImpl<MessageTotalMapper, Mes
      * @return
      */
     @Override
-    public List<MessageTotal> selectByUsername(String username) {
-        List<MessageTotal> msgList = msgMapper.selectByUsername(username);
-        for (MessageTotal msg : msgList) {
+    public List<MessageModel> selectByUsername(String username) {
+
+        List<MessageModel> msgList = new ArrayList<>();
+        for (MessageTotal msg : msgMapper.selectByUsername(username)) {
+            MessageModel model = new MessageModel();
+            model.setSendUsername(msg.getSendUsername());
+            model.setReceiveUsername(msg.getReceiveUsername());
+            model.setContent(msg.getContent());
+            model.setSendTime(TimeFormat.localDateTimeToString(msg.getSendTime()));
+            model.setFileUrl(msg.getFileUrl());
+            model.setMessageContentType(msg.getMessageContentType());
             if (msg.getSendUsername().equals(username)) {
-                msg.setSelf(1);
+                model.setSelf(String.valueOf(1));
             } else {
-                msg.setSelf(0);
+                model.setSelf(String.valueOf(0));
             }
+            msgList.add(model);
         }
         return msgList;
     }

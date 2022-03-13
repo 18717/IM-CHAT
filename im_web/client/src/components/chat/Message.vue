@@ -15,8 +15,8 @@
             <span>{{ msg.sendTime }}</span>
           </p>
 
-          <div class="main" :class="{self:msg.self}">
-            <img class="avatar" :src="msg.self === 1 ? currentUser.avatar : currentSession.avatar" alt="">
+          <div class="main" :class="{self:msg.self === '1'}">
+            <img class="avatar" :src="msg.self === '1' ? currentUser.avatar : currentSession.avatar" alt="">
             <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
                  style="width: 100px; height: 100px; border-radius: 3px">
             <p v-else class="text">

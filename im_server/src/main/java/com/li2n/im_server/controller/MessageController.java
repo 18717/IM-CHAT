@@ -1,6 +1,6 @@
 package com.li2n.im_server.controller;
 
-import com.li2n.im_server.pojo.MessageTotal;
+import com.li2n.im_server.pojo.model.MessageModel;
 import com.li2n.im_server.service.IMessageTotalService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class MessageController {
 
     @ApiOperation(value = "获得有关登录用户所有的消息记录")
     @GetMapping("/history/username")
-    public List<MessageTotal> getLoginUserHistoryMsg(String username) {
+    public List<MessageModel> getLoginUserHistoryMsg(String username) {
         return msgService.selectByUsername(username);
     }
 

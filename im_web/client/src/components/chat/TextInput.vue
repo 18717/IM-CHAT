@@ -69,10 +69,10 @@ export default {
           msgObj.content = this.content;
           msgObj.fileUrl = "";
           msgObj.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-          msgObj.self = 1;
+          msgObj.self = "1";
           this.$store.commit('addMessage', msgObj);
           this.$store.state.stomp.send('/ws/client/chat', {}, JSON.stringify(msgObj));
-          this.content = '';
+          this.content = "";
         }
       }
     },
@@ -105,7 +105,7 @@ export default {
       }
       sendInfo.fileUrl = response.obj;
       sendInfo.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-      sendInfo.self = 1;
+      sendInfo.self = "1";
       this.$store.state.stomp.send('/ws/client/chat', {}, JSON.stringify(sendInfo));
       this.$store.commit('addMessage', sendInfo)
     },
@@ -182,6 +182,7 @@ export default {
   padding-right: 8px;
   padding-top: 10px;
   font-size: 16px;
+  font-family: unset;
 }
 
 #textinput .btn-div {

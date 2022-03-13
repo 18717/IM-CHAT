@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * 消息实体类数据模型 用户接收前端传到后端的数据
+ * 消息实体类数据模型 用户接收和返回前端的数据
  * @author 一杯香梨
  * @version 1.0
  * @date 2022-3-12 下午 11:55
@@ -15,8 +15,11 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value = "MessageModel", description = "接收消息数据模型")
+@ApiModel(value = "MessageModel", description = "消息数据模型")
 public class MessageModel {
+
+    @ApiModelProperty(value = "发送者用户名")
+    private String sendNickname;
 
     @ApiModelProperty(value = "发送者用户名")
     private String sendUsername;

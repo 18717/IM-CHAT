@@ -51,10 +51,13 @@ public class WebSocketController {
         msg.setSendTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
         msg.setSelf(Integer.parseInt(model.getSelf()));
 
+        model.setSendNickname(user.getNickname());
+        model.setSendUsername(user.getUsername());
+
         UserInfo receiveUser = redisCache.getCacheObject("login:c-" + model.getReceiveUsername());
         if (!Objects.isNull(receiveUser)) {
             msg.setOnline(1);
-            simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/queue/chat", msg);
+            simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/queue/chat", model);
         } else {
             msg.setOnline(0);
             iMessageOfflineService.insertMsg(msg);
