@@ -83,20 +83,20 @@ public class WebSocketController {
         if ("add".equals(model.getRequestType())) {
             // 执行添加好友的操作：判断是否是添加好友的请求，判断是否是同意添加好友的反馈信息
             if (model.getResult() == null) {
-                System.out.println(model.getReceiverUsername() + "收到好友请求");
+                System.out.println(model.getReceiveUsername() + "收到好友请求");
                 System.out.println(model.getContent());
                 System.out.println(model.getSendUsername());
             } else if (model.getResult()) {
-                System.out.println(model.getReceiverUsername() + "同意添加为好友");
+                System.out.println(model.getReceiveUsername() + "同意添加为好友");
             } else {
-                System.out.println(model.getReceiverUsername() + "拒绝你的好友申请");
+                System.out.println(model.getReceiveUsername() + "拒绝你的好友申请");
             }
         } else if ("del".equals(model.getRequestType())) {
             // 执行删除好友的操作
             System.out.println(model.getSendUsername() + "已将你从好友列表删除");
         }
 
-        simpMessagingTemplate.convertAndSendToUser(model.getReceiverUsername(), "/topic/chat", model);
+        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/chat", model);
 
 
     }

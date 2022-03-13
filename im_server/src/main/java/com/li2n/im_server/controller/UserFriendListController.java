@@ -34,7 +34,7 @@ public class UserFriendListController {
     public RespBeanModel friendAdd(FriendModel model) {
         Boolean result = friendService.addFriendRecord(model);
         if (result) {
-            return RespBeanModel.success("成功添加" + model.getReceiverUsername() + "为好友");
+            return RespBeanModel.success("成功添加" + model.getReceiveUsername() + "为好友");
         } else {
             return RespBeanModel.success("添加好友失败，用户好友位不足");
         }
