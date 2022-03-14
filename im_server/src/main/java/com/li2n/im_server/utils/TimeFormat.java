@@ -23,11 +23,11 @@ public class TimeFormat {
     }
 
     /**
-     * 将 LocalDateTime转化为字符串格式
+     * 将 LocalDateTime转化为 yyyy-MM-dd HH:mm:ss 格式字符串
+     * @param localDateTime
      * @return
      */
-    public static String getLocalDateTimeString() {
-        LocalDateTime localDateTime = LocalDateTimeUtil.parse(LocalDateTime.now().toString());
+    public static String localDateTimeToString(LocalDateTime localDateTime) {
         return LocalDateTimeUtil.format(localDateTime, DatePattern.NORM_DATETIME_PATTERN);
     }
 

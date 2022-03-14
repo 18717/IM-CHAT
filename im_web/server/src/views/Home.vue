@@ -29,11 +29,9 @@
             <i class="el-icon-s-home"></i>个人中心
           </el-menu-item>
 
-          <el-submenu index="2">
-            <template slot="title"><i class="el-icon-s-comment"></i>系统通知</template>
-            <el-menu-item index="/to-user">指定用户</el-menu-item>
-            <el-menu-item index="/to-group">指定群组</el-menu-item>
-          </el-submenu>
+          <el-menu-item index="/notice">
+            <i class="el-icon-s-comment"></i>系统通知
+          </el-menu-item>
 
           <el-submenu index="3">
             <template slot="title"><i class="el-icon-user-solid"></i>用户管理</template>
@@ -83,6 +81,7 @@ export default {
   },
 
   mounted() {
+    this.$store.dispatch("connect")
     this.refreshLoginInfo();
   },
 
@@ -128,6 +127,8 @@ export default {
 <style>
 
 #main-container {
+  height: 90%;
+  max-height: 1080px;
   border-radius: 3px;
   background: rgb(238, 241, 246);
   border: 3px #eaeaea solid;

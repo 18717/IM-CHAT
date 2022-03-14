@@ -47,7 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         String[] paths = {"/ws/server", "/ws/client"};
-        String[] domains = {"http://localgost:8082", "http://localhost:8083"};
+        String[] domains = {"http://localhost:8082", "http://localhost:8083"};
         registry.addEndpoint(paths).setAllowedOrigins(domains).withSockJS();
     }
 

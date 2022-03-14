@@ -34,14 +34,7 @@ public class CommonController {
     @ApiOperation(value = "上传文件")
     @PostMapping("/upload/file")
     public RespBeanModel uploadQiniu(MultipartFile file, @RequestParam("type") String type) {
-        String folder = null;
-        if ("avatar".equals(type)) {
-            folder = "im_avatar/";
-        } else if ("file".equals(type)) {
-            folder = "im_file/";
-        } else if ("img".equals(type)) {
-            folder = "im_img/";
-        }
+        String folder = "im_" + type + "/";
         String saveFile = QiniuUpload.updateFile(file, Zone.zone2(), QiniuUpload.getUploadCredential(), file.getOriginalFilename(), folder);
         String url = QiniuUpload.publicFile(saveFile);
         return RespBeanModel.success("上传成功", url);

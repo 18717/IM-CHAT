@@ -105,4 +105,10 @@ public class ServerController {
         }
         return RespBeanModel.error("删除失败");
     }
+
+    @ApiOperation("获取所有用户名（不包括禁用和注销的用户）")
+    @GetMapping("/get/usernames")
+    public List<String> usernameList() {
+        return userService.usernameList();
+    }
 }

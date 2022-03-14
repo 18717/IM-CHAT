@@ -2,6 +2,10 @@ package com.li2n.im_server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.li2n.im_server.pojo.NoticeServer;
+import com.li2n.im_server.pojo.model.NoticeModel;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +16,18 @@ import com.li2n.im_server.pojo.NoticeServer;
  * @since 2022-03-08
  */
 public interface INoticeServerService extends IService<NoticeServer> {
+
+    /**
+     * 添加通知
+     * @param noticeServer
+     */
+    void insertNotice(NoticeServer noticeServer);
+
+    /**
+     * 获取用户的所有通知
+     * @param username
+     * @return
+     */
+    List<NoticeModel> selectByUsername(@Param("username") String username);
 
 }

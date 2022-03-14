@@ -91,11 +91,10 @@
     <el-pagination
         @current-change="currentChange"
         background
-        :page-size="pageSize"
+        :page-size="page.pageSize"
         layout="prev, pager, next, jumper, ->, total"
-        :total="total">
+        :total="page.total">
     </el-pagination>
-
     <!-- Edit -->
     <el-dialog
         title="编辑"
@@ -153,7 +152,6 @@
                <el-button @click="doEditUser('tempUser')" type="primary" size="medium" plain>确 定</el-button>
              </span>
     </el-dialog>
-
     <!-- Del -->
     <el-dialog
         title="删除用户"
@@ -165,26 +163,54 @@
                   <el-button @click="doDelUser" type="danger" size="medium" plain>删 除</el-button>
           </span>
     </el-dialog>
-
     <!-- SendMessage -->
     <el-dialog
         title="发送消息"
         :visible.sync="dialogSend"
         width="50%">
-      <el-form class="m-form-notice">
-        <el-input
-            type="textarea" :rows="7" placeholder="请输入内容"
-            :model="temUser.message" class="m-form-notice-input">
-        </el-input>
-      </el-form>
-
+      <el-card>
+        <el-form ref="form" label-position="left" :model="infoData" label-width="80px">
+          <el-form-item label="标题">
+            <el-input v-model="infoData.title"></el-input>
+          </el-form-item>
+          <el-form-item label="文件链接">
+            <el-upload
+                v-if="infoData.fileName === ''"
+                action="/common/upload/file"
+                :data="param2"
+                :headers="headers"
+                :on-success="uploadSuccess2"
+                :show-file-list="true"
+                :before-upload="beforeAvatarUpload2">
+              <el-button size="small" type="primary" plain style="border: 0">
+                上传文件 <i class="el-icon-upload2"></i>
+              </el-button>
+              <span style="font-size: 12px; color: red"> <b>（上传的文件大小不能超过5MB）</b> </span>
+            </el-upload>
+            <li v-else class="file-list">
+              <div class="t1"><i class="el-icon-document-checked"></i> {{ infoData.fileName }}</div>
+              <div class="t2">
+                <el-button type="text" size="medium" icon="el-icon-circle-close" plain @click="clearFile()"></el-button>
+              </div>
+            </li>
+          </el-form-item>
+          <el-form-item label="推送内容">
+            <el-input
+                type="textarea"
+                :rows="3"
+                placeholder="请输入内容"
+                maxlength="30"
+                v-model="infoData.content">
+            </el-input>
+          </el-form-item>
+        </el-form>
+      </el-card>
       <span slot="footer" class="dialog-footer">
           <el-button @click="dialogSend = false" type="info" size="medium" plain>取 消</el-button>
-          <el-button @click="dialogSend = false" type="success"
+          <el-button @click="doSendMsg" type="success"
                      size="medium" plain>{{ 'To：' + temUser.nickname }}</el-button>
         </span>
     </el-dialog>
-
     <!-- Offline -->
     <el-dialog
         title="注意"
@@ -196,7 +222,6 @@
                 <el-button @click="doForcedOffline" type="danger" size="medium" plain>强制下线</el-button>
               </span>
     </el-dialog>
-
     <!-- RestPassword -->
     <el-dialog
         title="重置密码"
@@ -224,28 +249,25 @@ export default {
   },
   name: "ListUser",
   data() {
-
     return {
       headers: {Authorization: window.sessionStorage.getItem('token')},
-      dialogAdd: false,
       dialogEdit: false,
       dialogDel: false,
       dialogSend: false,
       dialogOff: false,
       dialogRestPsw: false,
-      dialogVisible: false,
-      disabled: false,
-      /* 分页参数 */
-      total: 0,
-      currentPage: 1,
-      pageSize: 8,
-      /* 查询 */
-      query: {condition: 'uid', content: ''},
       users: [],
-      temUser: {},
-      /* 上传参数 */
+      temUser: {nickname: '',},
+      // 分页参数
+      page: {total: 0, currentPage: 1, pageSize: 8,},
+      // 查询参数
+      query: {condition: 'uid', content: ''},
+      // 上传参数
       param: {type: 'avatar'},
-      /* 校验规则 */
+      // 通知参数
+      infoData: {push: '', receiveUsername: '', title: '', fileUrl: '', content: '', fileName: ''},
+      param2: {type: 'notice_file'},
+      // 校验规则
       rules: {
         email: [
           {required: true, message: '请输入邮箱地址', trigger: 'blur'},
@@ -257,30 +279,26 @@ export default {
         ],
       },
     };
-
   },
   mounted() {
     this.initUserList();
   },
   methods: {
-
-    /* 初始化用户列表 */
+    // 初始化用户列表
     initUserList() {
-      this.getRequest('/server/search/page/?currentPage=' + this.currentPage + '&size=' + this.pageSize + '&' + this.query.condition + '=' + this.query.content).then(resp => {
+      this.getRequest('/server/search/page/?currentPage=' + this.page.currentPage + '&size=' + this.page.pageSize + '&' + this.query.condition + '=' + this.query.content).then(resp => {
         if (resp) {
           this.users = resp.data;
           this.total = resp.total;
         }
       })
     },
-
-    /* 分页 */
+    // 分页
     currentChange(currentPage) {
-      this.currentPage = currentPage;
+      this.page.currentPage = currentPage;
       this.initUserList();
     },
-
-    /* 编辑用户 */
+    //编辑用户
     showEditUser(user) {
       this.dialogEdit = true;
       this.temUser = user;
@@ -291,55 +309,6 @@ export default {
       })
       this.dialogEdit = false;
     },
-
-    /* 删除用户 */
-    showDelUser(user) {
-      this.dialogDel = true;
-      this.temUser = user;
-    },
-    doDelUser() {
-      this.deleteRequest('/server/delete/real/' + this.temUser.username).then(resp => {
-        this.initUserList();
-      })
-      this.dialogDel = false;
-    },
-
-    /* 发送消息给指定用户 */
-    showSendMsgUser(user) {
-      this.dialogSend = true;
-      this.temUser = user;
-    },
-    doSendMsg() {
-      this.dialogOff = false
-    },
-
-    /* 强制用户下线 */
-    showForcedDisconnect(user) {
-      this.dialogOff = true;
-      this.temUser = user;
-    },
-    doForcedOffline() {
-      this.putRequest('/server/forced/offline/' + this.temUser.username).then(resp => {
-        this.initUserList();
-      })
-      this.dialogOff = false
-    },
-
-    /* 重置密码 */
-    showRestPsw(user) {
-      this.dialogRestPsw = true;
-      this.temUser = user;
-    },
-    doResetPwd() {
-      this.putRequest('/server/update/password/' + this.temUser.username).then(resp => {
-        if (resp.code === 200) {
-          this.initUserList();
-        }
-      })
-      this.dialogRestPsw = false;
-    },
-
-    /* 判断用户上传头像的格式 */
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg';
       const isLt1M = file.size / 1024 / 1024 < 1;
@@ -354,11 +323,74 @@ export default {
       }
       return isJPG && isLt1M;
     },
-    /* 上传文件到七牛云 */
     uploadSuccess(response) {
       this.temUser.avatar = response.obj;
     },
-
+    // 删除用户
+    showDelUser(user) {
+      this.dialogDel = true;
+      this.temUser = user;
+    },
+    doDelUser() {
+      this.deleteRequest('/server/delete/real/' + this.temUser.username).then(resp => {
+        this.initUserList();
+      })
+      this.dialogDel = false;
+    },
+    // 发送消息给指定用户
+    showSendMsgUser(user) {
+      this.dialogSend = true;
+      this.temUser = user;
+      this.infoData.push = 'checked';
+      this.infoData.receiveUsername = "," + user.username + ",";
+    },
+    doSendMsg() {
+      this.infoData.pushTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+      this.$store.state.stomp.send('/ws/server/notice', {}, JSON.stringify(this.infoData));
+      this.$message.success('发送成功！');
+      this.dialogSend = false;
+      this.infoData = {push: '', receiveUsername: '', title: '', fileUrl: '', content: '', fileName: ''};
+    },
+    clearFile() {
+      this.infoData.fileName = '';
+      this.infoData.fileUrl = '';
+    },
+    beforeAvatarUpload2(file) {
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isLt5M) {
+        this.$message.error('上传文件的大小不能超过5MB');
+        return false;
+      }
+      this.infoData.fileName = file.name;
+      return isLt5M;
+    },
+    uploadSuccess2(response) {
+      this.infoData.fileUrl = response.obj;
+    },
+    // 强制用户下线
+    showForcedDisconnect(user) {
+      this.dialogOff = true;
+      this.temUser = user;
+    },
+    doForcedOffline() {
+      this.putRequest('/server/forced/offline/' + this.temUser.username).then(resp => {
+        this.initUserList();
+      })
+      this.dialogOff = false
+    },
+    // 重置密码
+    showRestPsw(user) {
+      this.dialogRestPsw = true;
+      this.temUser = user;
+    },
+    doResetPwd() {
+      this.putRequest('/server/update/password/' + this.temUser.username).then(resp => {
+        if (resp.code === 200) {
+          this.initUserList();
+        }
+      })
+      this.dialogRestPsw = false;
+    },
     /* 取消操作确认框 */
     handleClose(done) {
       this.$confirm('数据将不会被保存，确认关闭？').then(_ => {
@@ -368,25 +400,20 @@ export default {
       }).catch(_ => {
       });
     },
-
-  }
+  },
 }
 </script>
 
-<style scoped>
+<style>
 .el-pagination {
   text-align: right;
   padding: 10px 0 0 0;
 }
 
-.m-form-notice-input >>> .el-textarea__inner {
+.el-textarea textarea {
+  font-family: "HarmonyOS_Sans_Regular", sans-serif;
   resize: none;
   overflow: auto;
-}
-
-.m-form-notice button {
-  margin-top: 20px;
-  float: right;
 }
 
 .avatar-uploader .avatar-uploader-icon:hover {
@@ -423,7 +450,7 @@ export default {
   margin-bottom: 25px;
 }
 
-.user-card >>> .el-card__header {
+.user-card .el-card__header {
   padding: 7px 20px;
 }
 

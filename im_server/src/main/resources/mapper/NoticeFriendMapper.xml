@@ -8,6 +8,7 @@
         <result column="send_username" property="sendUsername" />
         <result column="receive_username" property="receiveUsername" />
         <result column="title" property="title" />
+        <result column="notice_type" property="noticeType" />
         <result column="content" property="content" />
         <result column="is_confirm" property="confirm" />
         <result column="is_add" property="add" />
@@ -19,7 +20,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, send_username, receive_username, title, content, is_confirm, is_add, is_del, is_online, create_time, update_time
+        id, send_username, receive_username, title, notice_type,  content, is_confirm, is_add, is_del, is_online, create_time, update_time
     </sql>
 
 </mapper>

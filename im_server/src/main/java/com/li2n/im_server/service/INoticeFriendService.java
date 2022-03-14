@@ -13,4 +13,11 @@ import com.li2n.im_server.pojo.NoticeFriend;
  */
 public interface INoticeFriendService extends IService<NoticeFriend> {
 
+    /**
+     * 添加好友通知记录
+     * @param noticeFriend 
+     * @author 一杯香梨
+     * @date 2022-3-13 下午 12:24
+     */
+    void addNoticeRecord(NoticeFriend noticeFriend);
 }

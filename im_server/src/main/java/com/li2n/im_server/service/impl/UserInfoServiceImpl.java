@@ -190,6 +190,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         initFriendGroup(userInfo.getUsername());
         userInfo.setPassword(null);
+        saveUsernamesToRedis();
         return RespBeanModel.success("注册成功", userInfo);
     }
 
@@ -368,6 +369,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("token", token);
         tokenMap.put("tokenHead", tokenHead);
+        saveUsernamesToRedis();
         return RespBeanModel.success("登录成功", tokenMap);
     }
 
@@ -405,6 +407,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(TimeFormat.getLocalDateTime());
         userMapper.insert(userInfo);
         initFriendGroup(userInfo.getUsername());
+        saveUsernamesToRedis();
         return true;
     }
 
@@ -500,6 +503,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         groupList.setCreateTime(LocalDateTime.now());
         groupList.setUpdateTime(LocalDateTime.now());
         groupListMapper.insert(groupList);
+    }
+
+    /**
+     * 获取所有用户名（不包括禁用和注销的用户）
+     *
+     * @return
+     */
+    @Override
+    public List<String> usernameList() {
+        return redisCache.getCacheList("usernames");
+    }
+
+    /**
+     * 从数据库中获取所有用户名（不包括禁用和注销的用户）并保存到redis中
+     * @return
+     */
+    private void saveUsernamesToRedis() {
+        redisCache.deleteObject("usernames");
+        redisCache.setCacheList("usernames", userMapper.selectUsernameAll());
     }
 
 }

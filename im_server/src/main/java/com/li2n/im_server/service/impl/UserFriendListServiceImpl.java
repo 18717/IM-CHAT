@@ -45,11 +45,11 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
     @Override
     public Boolean addFriendRecord(FriendModel model) {
         // 用户名
-        String receiverUsername = model.getReceiverUsername();
+        String receiverUsername = model.getReceiveUsername();
         String sendUsername = model.getSendUsername();
 
         // 从数据库中获取好友列表字符串
-        String receiverFriends = friendListStr(model.getReceiverUsername());
+        String receiverFriends = friendListStr(model.getReceiveUsername());
         String sendFriends = friendListStr(model.getSendUsername());
 
         // 旧好友列表

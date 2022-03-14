@@ -28,10 +28,10 @@ export default {
   }
 }
 
-setInterval(function () {
-  var time = UTCToLocalTimeString(new Date(), 'yyyy-MM-dd hh:mm:ss');
-  document.getElementById("bjTime").innerHTML = time;
-}, 1000);
+// setInterval(function () {
+//   var time = UTCToLocalTimeString(new Date(), 'yyyy-MM-dd hh:mm:ss');
+//   document.getElementById("bjTime").innerHTML = time;
+// }, 1000);
 </script>
 
 

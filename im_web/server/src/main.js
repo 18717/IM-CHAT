@@ -5,6 +5,7 @@ import VueMeta from 'vue-meta';
 import ElementUI, {Message} from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import axios from "axios";
+import store from "./vuex/store";
 import {deleteRequest, getRequest, postRequest, putRequest} from "@/api/api";
 
 Vue.prototype.postRequest = postRequest;
@@ -34,6 +35,6 @@ router.beforeEach(((to, from, next) => {
 }));
 
 new Vue({
-  router,
+  router,store,
   render: h => h(App)
 }).$mount('#app')

@@ -131,4 +131,10 @@ public interface IUserInfoService extends IService<UserInfo> {
      */
     Integer updateLoginCode(String username, Integer code);
 
+    /**
+     * 获取所有用户名（不包括禁用和注销的用户）
+     * @return
+     */
+    List<String> usernameList();
+
 }

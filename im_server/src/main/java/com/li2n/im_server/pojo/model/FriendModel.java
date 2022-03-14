@@ -21,7 +21,7 @@ public class FriendModel {
     @ApiModelProperty(value = "发送请求的用户名", required = true)
     private String sendUsername;
     @ApiModelProperty(value = "接收请求的用户名", required = true)
-    private String receiverUsername;
+    private String receiveUsername;
     @ApiModelProperty(value = "请求内容", required = true)
     private String content;
     @ApiModelProperty(value = "请求备注", required = true)

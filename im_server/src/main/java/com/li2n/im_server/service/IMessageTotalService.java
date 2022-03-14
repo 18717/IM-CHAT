@@ -2,6 +2,7 @@ package com.li2n.im_server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.li2n.im_server.pojo.MessageTotal;
+import com.li2n.im_server.pojo.model.MessageModel;
 
 import java.util.List;
 
@@ -48,6 +49,6 @@ public interface IMessageTotalService extends IService<MessageTotal> {
      * @param username
      * @return
      */
-    List<MessageTotal> selectByUsername(String username);
+    List<MessageModel> selectByUsername(String username);
 
 }
