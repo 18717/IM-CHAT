@@ -35,7 +35,7 @@
 export default {
   name: "Login",
   head: {
-    title: "IM-CHAT 即时通讯系统",
+    title: "登录",
     meta: [
       {name: 'description', content: '服务端登录'}
     ]

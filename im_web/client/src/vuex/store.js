@@ -154,7 +154,17 @@ const store = new Vuex.Store({
                     }
                     context.state.noticeList[key].push(receiveMsg)
                     window.localStorage.setItem('notice', JSON.stringify(context.state.noticeList))
-                })
+                });
+                context.state.stomp.subscribe('/user/topic/chat/notice', msg => {
+                    let receiveMsg = JSON.parse(msg.body);
+                    let key = receiveMsg.title;
+
+                    if (!context.state.noticeList[key]) {
+                        Vue.set(context.state.noticeList, key, []);
+                    }
+                    context.state.noticeList[key].push(receiveMsg)
+                    window.localStorage.setItem('notice', JSON.stringify(context.state.noticeList))
+                });
 
                 let user;
                 getRequest('/client/login/info').then(loginInfo => {

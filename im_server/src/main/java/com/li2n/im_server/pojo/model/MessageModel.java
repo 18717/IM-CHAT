@@ -27,6 +27,9 @@ public class MessageModel {
     @ApiModelProperty(value = "接收者用户名")
     private String receiveUsername;
 
+    @ApiModelProperty(value = "标题")
+    private String title;
+
     @ApiModelProperty(value = "消息内容类型")
     private String messageContentType;
 

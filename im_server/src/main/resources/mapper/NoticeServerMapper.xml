@@ -4,19 +4,28 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeServer">
-        <id column="id" property="id" />
-        <result column="title" property="title" />
-        <result column="send_username" property="sendUsername" />
-        <result column="content" property="content" />
-        <result column="message_content_type" property="messageContentType" />
-        <result column="receive_username" property="receiveUsername" />
-        <result column="push_num" property="pushNum" />
-        <result column="send_time" property="sendTime" />
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="notice_type" property="noticeType"/>
+        <result column="send_username" property="sendUsername"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="content" property="content"/>
+        <result column="content_type" property="contentType"/>
+        <result column="receive_username" property="receiveUsername"/>
+        <result column="push_num" property="pushNum"/>
+        <result column="send_time" property="sendTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, title, send_username, content, message_content_type, receive_username, push_num, send_time
+        id, title, notice_type, send_username,file_url, content, content_type, receive_username, push_num, send_time
     </sql>
+
+    <select id="selectListByReceiveUsername" resultMap="BaseResultMap">
+        SELECT *
+        FROM notice_server
+        WHERE notice_type = 'all'
+           OR LOCATE(#{username}, receive_username)
+    </select>
 
 </mapper>

@@ -10,7 +10,7 @@ import {postRequest} from "@/api/api";
 import {getRequest} from "@/api/api";
 import {putRequest} from "@/api/api";
 import {deleteRequest} from "@/api/api";
-import store from "../vuex/store";
+import store from "./vuex/store";
 
 Vue.prototype.postRequest = postRequest;
 Vue.prototype.getRequest = getRequest;

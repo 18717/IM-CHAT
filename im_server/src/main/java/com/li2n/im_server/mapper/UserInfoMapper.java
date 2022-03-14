@@ -7,6 +7,7 @@ import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.pojo.model.QueryUserModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -47,4 +48,11 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      * @return
      */
     UserInfo selectOne(@Param("username") String username);
+
+    /**
+     * 获取所有的用户名（不包括禁用和注销的用户）
+     * @return
+     */
+    @Select("select username from user_info where is_disable != 1 and is_deleted != 1")
+    List<String> selectUsernameAll();
 }
