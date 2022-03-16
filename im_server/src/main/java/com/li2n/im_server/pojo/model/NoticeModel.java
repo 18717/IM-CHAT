@@ -24,6 +24,8 @@ public class NoticeModel {
     private String receiveUsername;
     @ApiModelProperty(value = "标题")
     private String title;
+    @ApiModelProperty
+    private String fileName;
     @ApiModelProperty(value = "文件链接")
     private String fileUrl;
     @ApiModelProperty(value = "推送内容")

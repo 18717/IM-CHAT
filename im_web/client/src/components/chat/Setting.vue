@@ -218,6 +218,7 @@ export default {
               console.log("websocket已关闭连接")
             });
             window.sessionStorage.clear();
+            window.localStorage.clear();
             this.$router.replace('/');
           }
         })

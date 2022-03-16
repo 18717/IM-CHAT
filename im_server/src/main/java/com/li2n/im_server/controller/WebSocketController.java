@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -91,15 +92,23 @@ public class WebSocketController {
         noticeServer.setSendTime(TimeFormat.stringToLocalDateTime(model.getPushTime()));
         noticeServer.setPushNum(usernames.size());
 
+        model.setPushTime(TimeFormat.localDateTimeToString(noticeServer.getSendTime()));
+        model.setPushNum(usernames.size());
+
         if (!"all".equals(model.getPush())) {
-            receiveUsername = receiveUsername.substring(0, receiveUsername.length() - 1);
+            receiveUsername = receiveUsername.substring(1, receiveUsername.length() - 1);
             String[] usernameArr = receiveUsername.split(",");
             noticeServer.setPushNum(usernameArr.length);
+            model.setPushNum(usernameArr.length);
             for (String username : usernameArr) {
-                simpMessagingTemplate.convertAndSendToUser(username, "/topic/chat/notice", noticeServer);
+                updateRedisNotice(username, model);
+                simpMessagingTemplate.convertAndSendToUser(username, "/topic/notice/server", model);
             }
         } else {
-            simpMessagingTemplate.convertAndSend("/topic/chat/notice", noticeServer);
+            for (String username : usernames) {
+                updateRedisNotice(username, model);
+            }
+            simpMessagingTemplate.convertAndSend("/topic/chat", model);
         }
         noticeServerService.insertNotice(noticeServer);
     }
@@ -112,6 +121,7 @@ public class WebSocketController {
 
     /**
      * 发送添加/删除好友的消息和反馈
+     *
      * @param model
      */
     @MessageMapping("/ws/friend/send")
@@ -146,8 +156,25 @@ public class WebSocketController {
         }
 
         noticeFriendService.addNoticeRecord(noticeFriend);
-        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/chat", model);
+        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/notice/friend", model);
 
+    }
+
+    /**
+     * 更新redis中的通知
+     *
+     * @param username
+     * @param model
+     */
+    private void updateRedisNotice(String username, NoticeModel model) {
+        String key = "notice-server:" + "," + username + ",";
+        List<NoticeModel> cacheList = redisCache.getCacheList(key);
+        if (cacheList.isEmpty()) {
+            cacheList = noticeServerService.selectByUsername(username);
+        }
+        cacheList.add(model);
+        redisCache.deleteObject(key);
+        redisCache.setCacheList(key, cacheList);
     }
 
 }

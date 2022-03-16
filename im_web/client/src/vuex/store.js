@@ -14,6 +14,7 @@ const store = new Vuex.Store({
         /* 消息记录 */
         msgList: {},
         noticeList: {},
+        friendList: {},
         /* 好友列表 */
         users: [],
         // 当前登录用户
@@ -33,15 +34,12 @@ const store = new Vuex.Store({
             state.currentSession = currentSession;
             Vue.set(state.isDot, currentSession.username + '#' + state.currentUser.username, false);
         },
-        // 保存消息内容到 sessionStorage
         addMessage(state, msg) {
-
             let key = state.currentUser.username + '#' + msg.receiveUsername;
             let msgArr = state.msgList[key];
             if (!msgArr) {
                 Vue.set(state.msgList, key, []);
             }
-
             state.msgList[key].push({
                 sendUsername: msg.sendUsername,
                 receiveUsername: msg.receiveUsername,
@@ -51,6 +49,20 @@ const store = new Vuex.Store({
                 sendTime: msg.sendTime,
                 self: msg.self,
             })
+        },
+        addNoticeServer(state, notice) {
+            let key = 'server';
+            if (!state.noticeList[key]) {
+                Vue.set(state.noticeList, key, []);
+            }
+            state.noticeList[key].push(JSON.parse(notice));
+        },
+        addNoticeFriend(state, notice) {
+            let key = 'friend';
+            if (!state.noticeList[key]) {
+                Vue.set(state.noticeList, key, []);
+            }
+            state.noticeList[key].push(JSON.parse(notice));
         },
         // 请求好友列表
         INIT_FRIEND_LIST(state, data) {
@@ -72,13 +84,13 @@ const store = new Vuex.Store({
         INIT_HISTORY_MSG(state, data) {
             if (data) {
                 for (var i = 0; i < data.length; i++) {
-                    let login_username = this.state.currentUser.username;
+                    let loginUsername = this.state.currentUser.username;
                     let msg = data[i];
                     let key;
-                    if (login_username === msg.receiveUsername) {
-                        key = login_username + '#' + msg.sendUsername;
+                    if (loginUsername === msg.receiveUsername) {
+                        key = loginUsername + '#' + msg.sendUsername;
                     } else {
-                        key = login_username + '#' + msg.receiveUsername;
+                        key = loginUsername + '#' + msg.receiveUsername;
                     }
 
                     if (!state.msgList[key]) {
@@ -97,8 +109,27 @@ const store = new Vuex.Store({
                     })
                 }
             }
-            window.localStorage.setItem('history-message', JSON.stringify(state.msgList))
+            // window.localStorage.setItem('history-message', JSON.stringify(state.msgList))
             console.log("初始化消息")
+        },
+        INIT_NOTICE_SERVER(state, data) {
+            let key = 'server';
+            if (!state.noticeList[key]) {
+                Vue.set(state.noticeList, key, []);
+            }
+            for (let i = 0; i < data.length; i++) {
+                let notice = data[i];
+                state.noticeList[key].push({
+                    title: notice.title,
+                    fileName: notice.fileName,
+                    fileUrl: notice.fileUrl,
+                    content: notice.content,
+                    pushTime: notice.pushTime,
+                    pushNum: notice.pushNum,
+                })
+            }
+            // window.localStorage.setItem('notice', JSON.stringify(state.noticeList))
+            console.log("初始化通知")
         },
     },
 
@@ -140,30 +171,14 @@ const store = new Vuex.Store({
                     context.commit('addMessage', receiveMsg);
                 });
                 // 通知订阅
-                context.state.stomp.subscribe('/user/topic/chat', msg => {
-                    let receiveMsg = JSON.parse(msg.body);
-                    let key;
-                    if (receiveMsg.requestType !== "server") {
-                        key = "friend";
-                    } else {
-                        key = receiveMsg.requestType;
-                    }
-
-                    if (!context.state.noticeList[key]) {
-                        Vue.set(context.state.noticeList, key, []);
-                    }
-                    context.state.noticeList[key].push(receiveMsg)
-                    window.localStorage.setItem('notice', JSON.stringify(context.state.noticeList))
+                context.state.stomp.subscribe('/topic/chat', notice => {
+                    context.commit('addNoticeServer', notice.body);
                 });
-                context.state.stomp.subscribe('/user/topic/chat/notice', msg => {
-                    let receiveMsg = JSON.parse(msg.body);
-                    let key = receiveMsg.title;
-
-                    if (!context.state.noticeList[key]) {
-                        Vue.set(context.state.noticeList, key, []);
-                    }
-                    context.state.noticeList[key].push(receiveMsg)
-                    window.localStorage.setItem('notice', JSON.stringify(context.state.noticeList))
+                context.state.stomp.subscribe('/user/topic/notice/server', notice => {
+                    context.commit('addNoticeServer', notice.body);
+                });
+                context.state.stomp.subscribe('/user/topic/notice/friend', notice => {
+                    context.commit('addNoticeFriend', notice.body);
                 });
 
                 let user;
@@ -177,6 +192,10 @@ const store = new Vuex.Store({
                         getRequest('/message/history/username?username=' + context.state.currentUser.username).then(msgList => {
                             context.commit('INIT_HISTORY_MSG', msgList)
                         })
+                        getRequest('/notice-server/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                            context.commit('INIT_NOTICE_SERVER', noticeList)
+                        })
+                        // TODO 云端获取好友通知
                     })
                 })
             }, error => {
@@ -191,15 +210,30 @@ const store = new Vuex.Store({
     }
 })
 
+/*
 store.watch(function (state) {
-    // 如果没有改变也返回msgList
     return state.msgList;
-}, function (val) {
-    // 若检测到msgList改变，则将新的msgList覆盖
-    console.log("改变")
-    window.sessionStorage.setItem('history-message', JSON.stringify(val));
+}, function (value, oldValue) {
+    // window.sessionStorage.setItem('history-message', JSON.stringify(value));
 }, {
-    deep: true/*开启watch侦听*/
+    deep: true
 })
+
+store.watch(function (state) {
+    return state.noticeList;
+}, function (value, oldValue) {
+    // window.sessionStorage.setItem('notice', JSON.stringify(value));
+}, {
+    deep: true
+})
+
+store.watch(function (state) {
+    return state.noticeList;
+}, function (value, oldValue) {
+    // window.sessionStorage.setItem('friend', JSON.stringify(value));
+}, {
+    deep: true
+})
+*/
 
 export default store;

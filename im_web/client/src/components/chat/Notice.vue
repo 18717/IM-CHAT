@@ -8,44 +8,34 @@
     <!-- 功能列 -->
     <el-main class="chat-set-main scrollbar">
 
-
-      <el-collapse accordion>
+      <el-collapse>
         <el-collapse-item>
           <template slot="title">
-            <i class="el-icon-edit-outline"></i> <span>服务器公告</span>
+            <i class="el-icon-edit-outline"></i> <span>服务器通知</span>
           </template>
-          <li>与现实生活一致：习惯的语言和概念；</li>
-          <li>在界面中计样式、图标和文本、。</li>
+          <li v-for="server in noticeList['server']" @click="showNotice(server)">
+            <el-col :span="12">{{ server.title.substr(0, 7) }}</el-col>
+            <el-col :span="12" style="text-align: right; padding-right: 10px">
+              <el-tag size="small">{{ server.pushTime.substr(0, 10) }}</el-tag>
+            </el-col>
+          </li>
         </el-collapse-item>
 
         <el-collapse-item>
           <template slot="title">
-            <i class="el-icon-edit-outline"></i><span>通知</span>
+            <i class="el-icon-edit-outline"></i> <span>好友通知</span>
           </template>
-          <!--<li v-if="notices" v-for="notice in notices['friend']" @click="friendConfirm(notice)">-->
-          <!--  {{ notice.content.length > 18 ? notice.content.substr(0, 18) : notice.content }}-->
-          <!--</li>-->
-          <li>与现实生活一致：习惯的语言和概念；</li>
-          <li>在界面中计样式、图标和文本、。</li>
+          <li v-for="server in noticeList['server']">
+            <el-col :span="12">{{ server.title.substr(0, 7) }}</el-col>
+            <el-col :span="12" style="text-align: right; padding-right: 10px">
+              <el-tag size="small">{{ server.pushTime.substr(0, 10) }}</el-tag>
+            </el-col>
+          </li>
         </el-collapse-item>
       </el-collapse>
-
+      <el-divider><i class="el-icon-sunrise"></i></el-divider>
 
     </el-main>
-    <!--
-
-      <el-dialog
-          title="好友验证"
-          :visible.sync="dialogVisible"
-          width="30%"
-          :before-close="handleClose">
-        <span>{{ this.notice.content }}</span>
-        <span slot="footer" class="dialog-footer">
-      <el-button @click="dialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-    </span>
-      </el-dialog>
-    -->
 
 
   </div>
@@ -53,36 +43,34 @@
 
 <script>
 import {mapState} from "vuex";
+import {marked} from "marked";
 
 export default {
   name: "Notice",
   data() {
     return {
+      show: false,
       dialogVisible: false,
       notice: null,
-      notices: null,
+      markdown: "# test",
     }
   },
 
-  watch: {
-    noticeList: function () {
-      if (!this.noticeList.isEmpty()) {
-        this.notices = this.noticeList;
-      }
-      console.log("notice")
+  computed: {
+    ...mapState({
+      noticeList: 'noticeList',
+      friendList: 'friendList',
+    }),
+    markdownToHtml() {
+      return marked(this.markdown);
     }
   },
-
-  computed: mapState([
-    'noticeList',
-  ]),
 
   methods: {
     friendConfirm(notice) {
       this.dialogVisible = true;
       this.notice = notice;
     },
-
     handleClose(done) {
       this.$confirm('确认关闭？')
           .then(_ => {
@@ -90,8 +78,19 @@ export default {
           })
           .catch(_ => {
           });
-    }
-  }
+    },
+    showNotice(notice) {
+      let file;
+      if (notice.fileName !== "" || notice.fileUrl !== "") {
+        file = "<br/><br/><p><strong>附件：</strong><a style='color: #409EFF; text-decoration: none' href=" + notice.fileUrl + ">" + notice.fileName + "</a></p>";
+      } else {
+        file = '';
+      }
+      this.$alert(marked(notice.content) + file, {
+        dangerouslyUseHTMLString: true
+      });
+    },
+  },
 }
 </script>
 
@@ -99,6 +98,14 @@ export default {
 h5 {
   padding: 0;
   margin: 0;
+}
+
+.el-message-box {
+  width: 700px !important;
+  height: auto !important;
+  max-height: 700px !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
 }
 
 /* 标题 */
@@ -167,5 +174,9 @@ h5 {
 
 .setItem button:hover {
   background-color: rgba(89, 89, 89, 0.3);
+}
+
+.el-divider__text {
+  background: none !important;
 }
 </style>

@@ -8,6 +8,7 @@ import Friend from "@/components/chat/Friend";
 import Group from "@/components/chat/Group";
 import Notice from "@/components/chat/Notice";
 import Setting from "@/components/chat/Setting";
+import Test from "@/views/Test";
 
 Vue.use(VueRouter)
 
@@ -49,6 +50,11 @@ const routes = [
     path: '/forget',
     name: '忘记密码',
     component: Forget
+  },
+  {
+    path: '/test',
+    name: '忘记密码',
+    component: Test
   },
   {
     path: '/home',

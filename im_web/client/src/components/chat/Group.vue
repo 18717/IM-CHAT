@@ -18,7 +18,7 @@
     <!-- 群列表 -->
     <el-main class="chat-groupList-main scrollbar">
 
-      <el-collapse accordion>
+      <el-collapse>
         <el-collapse-item class="groupItem">
           <template slot="title">
             <i class="el-icon-cloudy"></i> <span>群1</span>
@@ -57,6 +57,8 @@
           </li>
           <li>祈雪灵祝</li>
         </el-collapse-item>
+
+        <el-divider><i class="el-icon-sunrise"></i></el-divider>
       </el-collapse>
 
     </el-main>

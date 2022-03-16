@@ -4,6 +4,7 @@ package com.li2n.im_server.controller;
 import com.li2n.im_server.pojo.NoticeServer;
 import com.li2n.im_server.pojo.model.NoticeModel;
 import com.li2n.im_server.service.INoticeServerService;
+import com.li2n.im_server.utils.RedisCache;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,12 +26,19 @@ import java.util.List;
 public class NoticeServerController {
 
     @Autowired
+    private RedisCache redisCache;
+    @Autowired
     private INoticeServerService noticeServerService;
 
     @ApiOperation(value = "获取用户的所有通知")
     @GetMapping("/history/username")
     public List<NoticeModel> getLoginUserHistoryNotice(String username) {
-        return noticeServerService.selectByUsername("," + username + ",");
+        String key = "notice-server:" + "," + username + ",";
+        List<NoticeModel> cacheList = redisCache.getCacheList(key);
+        if (cacheList.isEmpty()) {
+            cacheList = noticeServerService.selectByUsername(username);
+        }
+        return cacheList;
     }
 
 }
