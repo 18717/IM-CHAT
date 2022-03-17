@@ -22,10 +22,9 @@ public interface IGroupInfoService extends IService<GroupInfo> {
     /**
      * 建群
      * @param groupInfo
-     * @param code
      * @return
      */
-    RespBeanModel foundGroup(GroupInfo groupInfo, String code);
+    RespBeanModel foundGroup(GroupInfo groupInfo);
 
     /**
      * 搜群（分页）

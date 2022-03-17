@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,17 +56,16 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * 建群
      *
      * @param groupInfo
-     * @param code
      * @return
      */
     @Override
-    public RespBeanModel foundGroup(GroupInfo groupInfo, String code) {
+    public RespBeanModel foundGroup(GroupInfo groupInfo) {
         String captchaKey = "group-found:" + groupInfo.getMasterUsername();
-  /*      String captcha = redisCache.getCacheObject(captchaKey);
-        if ("".equals(code) || !captcha.equalsIgnoreCase(code)) {
+        String captcha = redisCache.getCacheObject(captchaKey);
+        if ("".equals(groupInfo.getCode()) || !captcha.equalsIgnoreCase(groupInfo.getCode())) {
             return RespBeanModel.error("验证码输入错误，请重新输入!");
         }
-        redisCache.deleteObject(captchaKey);*/
+        redisCache.deleteObject(captchaKey);
 
         int foundNum = getFoundGroupNum(groupInfo.getMasterUsername());
         int joinNum = getGroupNum(groupInfo.getMasterUsername()) - foundNum;
@@ -76,7 +76,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         tipModel.setRemainderJoinNum(GROUP_JOIN_MAX_NUM - joinNum);
 
         if (foundNum > GROUP_FOUND_MAX_NUM || foundNum == GROUP_FOUND_MAX_NUM) {
-            return RespBeanModel.error("创建失败！", tipModel);
+            return RespBeanModel.success(tipModel);
         }
 
         groupInfo.setGid(UID.uidGet12(groupInfo.getMasterUsername()));
@@ -187,7 +187,6 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      */
     @Override
     public List<GroupInfo> selectGroupList(String username) {
-
         ArrayList<GroupInfo> groups = new ArrayList<>();
         String gidStr = getGroupListByUsername(username).getGids();
         if ("".equals(gidStr)) {
@@ -195,10 +194,11 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         }
         String[] gids = gidStr.split(",");
         for (String gid : gids) {
-            groups.add(groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid)));
+            GroupInfo groupInfo = groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid));
+            groupInfo.setMemberArr(getGroupMembers(username, gid));
+            groups.add(groupInfo);
         }
         return groups;
-
     }
 
     /**
@@ -251,6 +251,23 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         return getGroupByGid(gid).getMembers().split(",").length;
     }
 
+
+    /**
+     * 根据Gid获取群成员用户名
+     *
+     * @param gid
+     * @param username
+     * @return
+     */
+    private List<String> getGroupMembers(String username, String gid) {
+        int index = username.length() + 1;
+        String members = getGroupByGid(gid).getMembers();
+        if (members.length() < index + 1) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(members.substring(index).split(",")));
+    }
+
     /**
      * 根据用户名更新用户群组数据
      *
@@ -259,7 +276,6 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     private void updateUserGroupInfo(String username) {
 
     }
-
 
     /**
      * 更新群组列表信息

@@ -2,33 +2,25 @@
   <div id="list">
     <!-- 搜索框 -->
     <el-header class="chat-friendsList-header">
-      <el-row>
-        <el-col :span="16">
-          <el-input placeholder="搜索" v-model="search" clearable prefix-icon="el-icon-search" size="mini"
-                    @input="searchList"
-                    style="width: 170px">
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button size="mini" @click="dialogVisible = true">搜索用户</el-button>
-        </el-col>
-
-      </el-row>
+      <el-input placeholder="搜索" v-model="search" clearable prefix-icon="el-icon-search" size="mini"
+                @input="searchList"
+                style="width: 170px; padding-right: 5px">
+      </el-input>
+      <el-button size="mini" @click="dialogVisible = true">搜索用户</el-button>
     </el-header>
-
     <!-- 好友列表 -->
     <el-main class="chat-friendsList-main scrollbar">
-      <div class="friendItem" v-for="user in users"
-           v-on:click="changeCurrentSession(user)">
+      <div v-for="friend in friendList" class="friendItem"
+           @click="changeCurrentSession(friend)">
 
-        <el-button :class="{ activeItem: currentSession ? user.username === currentSession.username : false }">
+        <el-button :class="{ activeItem: currentSession ? friend.username === currentSession.username : false }">
           <el-row>
             <el-col :span="4">
-              <el-avatar shape="square" :size="40" :src="user.avatar"></el-avatar>
+              <el-avatar shape="square" :size="40" :src="friend.avatar"></el-avatar>
             </el-col>
             <el-col :span="16">
-              <el-badge :is-dot="isDot[user.username + '#' + currentUser.username]" class="item">
-                <p>{{ user.nickname }}</p>
+              <el-badge :is-dot="isDot[friend.username + '#' + currentUser.username]" class="item">
+                <p>{{ friend.nickname }}</p>
               </el-badge>
             </el-col>
           </el-row>
@@ -37,7 +29,6 @@
 
       </div>
     </el-main>
-
     <!-- 搜索用户 -->
     <el-dialog
         :before-close="handleClose"
@@ -104,12 +95,12 @@
           :total="total">
       </el-pagination>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import {Message} from "element-ui";
 
 export default {
   name: "Friend",
@@ -119,7 +110,7 @@ export default {
       // 登录用户
       loginInfo: '',
       // 好友列表
-      friendList: '',
+      // friendList: '',
       // 搜索参数
       search: '',
       // 分页参数
@@ -147,7 +138,7 @@ export default {
     },
     refreshFriendList() {
       console.log("刷新列表")
-      this.friendList = JSON.parse(window.sessionStorage.getItem('friend-list'));
+      // this.friendList = JSON.parse(window.sessionStorage.getItem('friend-list'));
     },
     // 发送好友请求
     sendFriendRequest(user) {
@@ -215,14 +206,14 @@ export default {
     },
   },
   computed: mapState([
-    'users',
+    'friendList',
     'currentUser',
     'isDot',
     'currentSession',
   ]),
   mounted() {
     this.initUser();
-    this.refreshFriendList();
+    // this.refreshFriendList();
   },
 }
 </script>

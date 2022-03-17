@@ -11,20 +11,21 @@ new Date();
 
 const store = new Vuex.Store({
     state: {
-        /* 消息记录 */
+        // 消息列表
         msgList: {},
+        // 通知列表
         noticeList: {},
+        // 好友列表
         friendList: {},
-        /* 好友列表 */
-        users: [],
+        // 群聊列表
+        groupList: [],
         // 当前登录用户
         currentUser: null,
         // 当前选中的聊天用户
         currentSession: null,
-        filterKey: '',
-        // 与服务器的连接
+        // 服务器连接
         stomp: null,
-        // 消息未读
+        // 消息未读标识
         isDot: {},
     },
 
@@ -62,7 +63,7 @@ const store = new Vuex.Store({
             if (obj.verified === 1 && obj.confirm === 1) {
                 getRequest('/friend/list?username=' + state.currentUser.username).then(friendList => {
                     if (friendList) {
-                        state.users = friendList;
+                        state.friendList = friendList;
                     }
                     window.sessionStorage.setItem('friend-data', JSON.stringify(friendList))
                 })
@@ -76,12 +77,20 @@ const store = new Vuex.Store({
         // 初始化好友列表
         INIT_FRIEND_LIST(state, data) {
             if (data) {
-                state.users = data;
+                state.friendList = data;
             } else {
                 console.log("没有拿到好友列表数据")
             }
             window.sessionStorage.setItem('friend-data', JSON.stringify(data))
             console.log("初始化好友列表完成")
+        },
+        // 初始化群聊列表
+        INIT_GROUP_LIST(state, data) {
+            if (data) {
+                state.groupList = data;
+            }
+            window.sessionStorage.setItem('group-data', JSON.stringify(data))
+            console.log("初始化群聊列表完成")
         },
         // 设置当前登录用户
         INIT_CURRENTUSER(state, data) {
@@ -223,6 +232,9 @@ const store = new Vuex.Store({
                 }).then(() => {
                     getRequest('/friend/list?username=' + context.state.currentUser.username).then(friendList => {
                         context.commit('INIT_FRIEND_LIST', friendList)
+                    })
+                    getRequest('/group/list?username=' + context.state.currentUser.username).then(groupList => {
+                        context.commit('INIT_GROUP_LIST', groupList)
                     }).then(() => {
                         getRequest('/message/history/username?username=' + context.state.currentUser.username).then(msgList => {
                             context.commit('INIT_HISTORY_MSG', msgList)
