@@ -58,27 +58,36 @@ const store = new Vuex.Store({
             state.noticeList[key].push(JSON.parse(notice));
         },
         addNoticeFriend(state, notice) {
+            let obj = JSON.parse(notice);
+            if (obj.verified === 1 && obj.confirm === 1) {
+                getRequest('/friend/list?username=' + state.currentUser.username).then(friendList => {
+                    if (friendList) {
+                        state.users = friendList;
+                    }
+                    window.sessionStorage.setItem('friend-data', JSON.stringify(friendList))
+                })
+            }
             let key = 'friend';
             if (!state.noticeList[key]) {
                 Vue.set(state.noticeList, key, []);
             }
-            state.noticeList[key].push(JSON.parse(notice));
+            state.noticeList[key].push(obj);
         },
-        // 请求好友列表
+        // 初始化好友列表
         INIT_FRIEND_LIST(state, data) {
             if (data) {
                 state.users = data;
             } else {
                 console.log("没有拿到好友列表数据")
             }
-            window.localStorage.setItem('friend-data', JSON.stringify(data))
-            console.log("初始化好友列表")
+            window.sessionStorage.setItem('friend-data', JSON.stringify(data))
+            console.log("初始化好友列表完成")
         },
         // 设置当前登录用户
         INIT_CURRENTUSER(state, data) {
             state.currentUser = data;
-            window.localStorage.setItem('login-user', JSON.stringify(data));
-            console.log("初始化登录信息")
+            window.sessionStorage.setItem('login-user', JSON.stringify(data));
+            console.log("初始化登录信息完成")
         },
         // 拉取云端历史消息记录
         INIT_HISTORY_MSG(state, data) {
@@ -109,27 +118,54 @@ const store = new Vuex.Store({
                     })
                 }
             }
-            // window.localStorage.setItem('history-message', JSON.stringify(state.msgList))
-            console.log("初始化消息")
+            console.log("初始化历史消息记录完成")
         },
         INIT_NOTICE_SERVER(state, data) {
-            let key = 'server';
-            if (!state.noticeList[key]) {
-                Vue.set(state.noticeList, key, []);
+            if (data) {
+                let key = 'server';
+                if (!state.noticeList[key]) {
+                    Vue.set(state.noticeList, key, []);
+                }
+                for (let i = 0; i < data.length; i++) {
+                    let notice = data[i];
+                    state.noticeList[key].push({
+                        title: notice.title,
+                        fileName: notice.fileName,
+                        fileUrl: notice.fileUrl,
+                        content: notice.content,
+                        pushTime: notice.pushTime,
+                        pushNum: notice.pushNum,
+                    })
+                }
             }
-            for (let i = 0; i < data.length; i++) {
-                let notice = data[i];
-                state.noticeList[key].push({
-                    title: notice.title,
-                    fileName: notice.fileName,
-                    fileUrl: notice.fileUrl,
-                    content: notice.content,
-                    pushTime: notice.pushTime,
-                    pushNum: notice.pushNum,
-                })
+            console.log("初始化系统通知完成")
+        },
+        INIT_NOTICE_FRIEND(state, data) {
+            if (data) {
+                let key = 'friend';
+                if (!state.noticeList[key]) {
+                    Vue.set(state.noticeList, key, []);
+                }
+                for (let i = 0; i < data.length; i++) {
+                    let notice = data[i];
+                    state.noticeList[key].push({
+                        title: notice.title,
+                        content: notice.content,
+                        sendTime: notice.sendTime,
+                        add: notice.add,
+                        del: notice.del,
+                        confirm: notice.confirm,
+                        verified: notice.verified,
+                        sendUsername: notice.sendUsername,
+                        receiveUsername: notice.receiveUsername,
+                        sendNickname: notice.sendNickname,
+                        avatarUrl: notice.avatarUrl,
+                        flag: notice.flag,
+                        flagTime: notice.sendTime,
+                    })
+                }
             }
-            // window.localStorage.setItem('notice', JSON.stringify(state.noticeList))
-            console.log("初始化通知")
+            console.log("初始化好友通知完成")
         },
     },
 
@@ -141,7 +177,7 @@ const store = new Vuex.Store({
             let token = window.sessionStorage.getItem('token');
             context.state.stomp.connect({'Auth-Token': token}, success => {
                 console.log("websocket连接成功，正在订阅消息中")
-                // 消息订阅
+                // 通知订阅
                 context.state.stomp.subscribe('/user/queue/chat', msg => {
                     let receiveMsg = JSON.parse(msg.body);
                     if (context.state.currentSession === null || context.state.currentSession.username !== receiveMsg.sendUsername) {
@@ -170,7 +206,6 @@ const store = new Vuex.Store({
                     receiveMsg.receiveUsername = receiveMsg.sendUsername;
                     context.commit('addMessage', receiveMsg);
                 });
-                // 通知订阅
                 context.state.stomp.subscribe('/topic/chat', notice => {
                     context.commit('addNoticeServer', notice.body);
                 });
@@ -195,7 +230,9 @@ const store = new Vuex.Store({
                         getRequest('/notice-server/history/username?username=' + context.state.currentUser.username).then(noticeList => {
                             context.commit('INIT_NOTICE_SERVER', noticeList)
                         })
-                        // TODO 云端获取好友通知
+                        getRequest('/notice-friend/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                            context.commit('INIT_NOTICE_FRIEND', noticeList)
+                        })
                     })
                 })
             }, error => {

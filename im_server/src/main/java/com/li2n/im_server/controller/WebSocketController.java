@@ -7,10 +7,7 @@ import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.pojo.model.FriendModel;
 import com.li2n.im_server.pojo.model.MessageModel;
 import com.li2n.im_server.pojo.model.NoticeModel;
-import com.li2n.im_server.service.IMessageOfflineService;
-import com.li2n.im_server.service.IMessageTotalService;
-import com.li2n.im_server.service.INoticeFriendService;
-import com.li2n.im_server.service.INoticeServerService;
+import com.li2n.im_server.service.*;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,6 +41,8 @@ public class WebSocketController {
     private INoticeFriendService noticeFriendService;
     @Autowired
     private INoticeServerService noticeServerService;
+    @Autowired
+    private IUserFriendListService userFriendListService;
 
     @MessageMapping("/ws/client/chat")
     public void handleMsg(Authentication authentication, MessageModel model) {
@@ -101,12 +100,12 @@ public class WebSocketController {
             noticeServer.setPushNum(usernameArr.length);
             model.setPushNum(usernameArr.length);
             for (String username : usernameArr) {
-                updateRedisNotice(username, model);
+                updateRedisServerNotice(username, model);
                 simpMessagingTemplate.convertAndSendToUser(username, "/topic/notice/server", model);
             }
         } else {
             for (String username : usernames) {
-                updateRedisNotice(username, model);
+                updateRedisServerNotice(username, model);
             }
             simpMessagingTemplate.convertAndSend("/topic/chat", model);
         }
@@ -120,7 +119,7 @@ public class WebSocketController {
     }
 
     /**
-     * 发送添加/删除好友的消息和反馈
+     * 转发添加/删除好友的消息
      *
      * @param model
      */
@@ -129,44 +128,70 @@ public class WebSocketController {
 
         UserInfo receiveUser = redisCache.getCacheObject("login:c-" + model.getReceiveUsername());
         NoticeFriend noticeFriend = new NoticeFriend();
+        noticeFriend.setAvatarUrl(model.getAvatarUrl());
+        noticeFriend.setSendNickname(model.getSendNickname());
         noticeFriend.setSendUsername(model.getSendUsername());
         noticeFriend.setReceiveUsername(model.getReceiveUsername());
-        noticeFriend.setContent(model.getComment());
         noticeFriend.setCreateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
+        noticeFriend.setSendTime(model.getSendTime());
+        noticeFriend.setFlag(model.getFlag());
+        // 是否在线
         if (!Objects.isNull(receiveUser)) {
             noticeFriend.setOnline(1);
         } else {
             noticeFriend.setOnline(0);
         }
+        // 添加/删除
         if ("add".equals(model.getRequestType())) {
+            noticeFriend.setContent(model.getComment());
             noticeFriend.setAdd(1);
             noticeFriend.setDel(0);
-            // TODO 添加好友操作
-            if (model.getResult() == null) {
-                System.out.println(model.getComment());
-            } else if (model.getResult()) {
-                System.out.println(model.getReceiveUsername() + "同意添加为好友");
+            if (model.getResult() != null) {
+                if (model.getResult()) {
+                    noticeFriend.setTitle("已同意申请");
+                    noticeFriend.setContent(model.getComment());
+                    noticeFriend.setConfirm(1);
+                    noticeFriend.setVerified(1);
+                    noticeFriend.setSendTime(model.getSendTime());
+                    noticeFriend.setResult(model.getResult());
+                    FriendModel friendModel = new FriendModel();
+                    friendModel.setSendUsername(model.getReceiveUsername());
+                    friendModel.setReceiveUsername(model.getSendUsername());
+                    userFriendListService.addFriendRecord(friendModel);
+                } else {
+                    noticeFriend.setTitle("已拒绝申请");
+                    noticeFriend.setContent(model.getComment());
+                    noticeFriend.setSendTime(model.getSendTime());
+                    noticeFriend.setResult(model.getResult());
+                    noticeFriend.setConfirm(0);
+                    noticeFriend.setVerified(1);
+                }
+                noticeFriend.setFlagTime(model.getFlagTime());
+                noticeFriend.setUpdateTime(LocalDateTime.now());
+                noticeFriendService.updateNoticeFriend(noticeFriend);
             } else {
-                System.out.println(model.getReceiveUsername() + "拒绝你的好友申请");
+                noticeFriend.setTitle(model.getContent());
+                noticeFriend.setVerified(0);
             }
         } else if ("del".equals(model.getRequestType())) {
-            // TODO 删除好友操作
             noticeFriend.setAdd(0);
             noticeFriend.setDel(1);
+            noticeFriend.setVerified(1);
+            noticeFriend.setTitle(model.getContent());
         }
-
         noticeFriendService.addNoticeRecord(noticeFriend);
-        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/notice/friend", model);
+        updateRedisFriendNotice(model.getReceiveUsername(), noticeFriend);
+        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/notice/friend", noticeFriend);
 
     }
 
     /**
-     * 更新redis中的通知
+     * 更新redis中的系统通知
      *
      * @param username
      * @param model
      */
-    private void updateRedisNotice(String username, NoticeModel model) {
+    private void updateRedisServerNotice(String username, NoticeModel model) {
         String key = "notice-server:" + "," + username + ",";
         List<NoticeModel> cacheList = redisCache.getCacheList(key);
         if (cacheList.isEmpty()) {
@@ -175,6 +200,24 @@ public class WebSocketController {
         cacheList.add(model);
         redisCache.deleteObject(key);
         redisCache.setCacheList(key, cacheList);
+    }
+
+    /**
+     * 更新redis中的好友通知
+     *
+     * @param username
+     * @param noticeFriend
+     */
+    private void updateRedisFriendNotice(String username, NoticeFriend noticeFriend) {
+        String key = "notice-friend:" + "," + username + ",";
+        List<NoticeFriend> cacheList = redisCache.getCacheList(key);
+        if (cacheList.isEmpty()) {
+            noticeFriendService.selectByUsername(username);
+        } else {
+            cacheList.add(noticeFriend);
+            redisCache.deleteObject(key);
+            redisCache.setCacheList(key, cacheList);
+        }
     }
 
 }

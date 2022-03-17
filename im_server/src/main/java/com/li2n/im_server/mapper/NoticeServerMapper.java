@@ -3,6 +3,7 @@ package com.li2n.im_server.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.li2n.im_server.pojo.NoticeServer;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,5 +26,5 @@ public interface NoticeServerMapper extends BaseMapper<NoticeServer> {
      * @param username
      * @return
      */
-    List<NoticeServer> selectListByReceiveUsername(String username);
+    List<NoticeServer> selectListByReceiveUsername(@Param("username") String username);
 }
