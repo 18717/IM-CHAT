@@ -1,5 +1,6 @@
 package com.li2n.im_server.pojo.model;
 
+import com.li2n.im_server.pojo.NoticeFriend;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -18,6 +19,10 @@ import lombok.experimental.Accessors;
 @ApiModel(value = "FriendParams对象", description = "好友请求参数")
 public class FriendModel {
 
+    @ApiModelProperty(value = "头像Url", required = true)
+    private String avatarUrl;
+    @ApiModelProperty(value = "发送请求的用户名", required = true)
+    private String sendNickname;
     @ApiModelProperty(value = "发送请求的用户名", required = true)
     private String sendUsername;
     @ApiModelProperty(value = "接收请求的用户名", required = true)
@@ -32,5 +37,9 @@ public class FriendModel {
     private Boolean result;
     @ApiModelProperty(value = "请求时间", required = true)
     private String sendTime;
+    @ApiModelProperty(value = "反馈标记", required = true)
+    private int flag;
+    @ApiModelProperty(value = "标记时间", required = true)
+    private String flagTime;
 
 }

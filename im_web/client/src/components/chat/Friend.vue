@@ -146,7 +146,8 @@ export default {
       })
     },
     refreshFriendList() {
-      this.friendList = JSON.parse(window.sessionStorage.getItem('friend-list'))
+      console.log("刷新列表")
+      this.friendList = JSON.parse(window.sessionStorage.getItem('friend-list'));
     },
     // 发送好友请求
     sendFriendRequest(user) {
@@ -156,15 +157,16 @@ export default {
         cancelButtonText: '取消',
       }).then(({value}) => {
         // 发送好友请求
+        friendParams.avatarUrl = this.loginInfo.avatar;
+        friendParams.sendNickname = this.loginInfo.nickname;
         friendParams.sendUsername = this.loginInfo.username;
         friendParams.receiveUsername = user.username;
-        friendParams.content = "【好友验证】" + this.loginInfo.nickname + "请求添加你为好友";
+        friendParams.flag = 0;
+        friendParams.content = "好友申请";
         friendParams.comment = value;
         friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
         friendParams.requestType = 'add';
-
         this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
-
         this.$message({
           type: 'success',
           message: '向用户【' + user.nickname + '】发送好友请求成功！'
@@ -220,7 +222,7 @@ export default {
   ]),
   mounted() {
     this.initUser();
-    // this.refreshFriendList();
+    this.refreshFriendList();
   },
 }
 </script>

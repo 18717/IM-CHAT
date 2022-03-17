@@ -8,6 +8,7 @@
         <result column="title" property="title"/>
         <result column="notice_type" property="noticeType"/>
         <result column="send_username" property="sendUsername"/>
+        <result column="file_name" property="fileName"/>
         <result column="file_url" property="fileUrl"/>
         <result column="content" property="content"/>
         <result column="content_type" property="contentType"/>
@@ -18,7 +19,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, title, notice_type, send_username,file_url, content, content_type, receive_username, push_num, send_time
+        id, title, notice_type, send_username, file_name, file_url, content, content_type, receive_username, push_num, send_time
     </sql>
 
     <select id="selectListByReceiveUsername" resultMap="BaseResultMap">

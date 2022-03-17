@@ -47,11 +47,16 @@ public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, Not
      */
     @Override
     public List<NoticeModel> selectByUsername(String username) {
+        username = "," + username + ",";
         List<NoticeModel> noticeModels = new ArrayList<>();
         List<NoticeServer> noticeServerList = noticeServerMapper.selectListByReceiveUsername(username);
+        if (noticeServerList.isEmpty()) {
+            return new ArrayList<>();
+        }
         for (NoticeServer noticeServer : noticeServerList) {
             NoticeModel model = new NoticeModel();
             model.setTitle(noticeServer.getTitle());
+            model.setFileName(noticeServer.getFileName());
             model.setFileUrl(noticeServer.getFileUrl());
             model.setContent(noticeServer.getContent());
             model.setPushNum(noticeServer.getPushNum());
@@ -59,6 +64,10 @@ public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, Not
             noticeModels.add(model);
         }
         String key = "notice-server:" + username;
+        List<NoticeModel> cacheNoticeList = redisCache.getCacheList(key);
+        if (!cacheNoticeList.isEmpty()) {
+            redisCache.deleteObject(key);
+        }
         redisCache.setCacheList(key, noticeModels);
         return noticeModels;
     }

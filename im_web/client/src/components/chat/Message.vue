@@ -49,13 +49,6 @@ export default {
     'msgList',
     'currentSession',
   ]),
-  /* watch: {
-     // 当聊天记录改变，刷新当前组件重新渲染页面数据
-     tag: function () {
-       this.$forceUpdate();
-       console.log("刷新")
-     }
-   },*/
   mounted() {
     // this.initUser();
     // this.refreshHistoryMsg();

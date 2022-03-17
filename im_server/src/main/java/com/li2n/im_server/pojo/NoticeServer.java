@@ -44,6 +44,10 @@ public class NoticeServer implements Serializable {
     @TableField("send_username")
     private String sendUsername;
 
+    @ApiModelProperty(value = "文件名称")
+    @TableField("file_name")
+    private String fileName;
+
     @ApiModelProperty(value = "文件链接")
     @TableField("file_url")
     private String fileUrl;

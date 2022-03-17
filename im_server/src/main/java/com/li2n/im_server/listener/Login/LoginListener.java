@@ -3,6 +3,8 @@ package com.li2n.im_server.listener.Login;
 import com.li2n.im_server.pojo.MessageOffline;
 import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.service.IMessageOfflineService;
+import com.li2n.im_server.service.INoticeServerService;
+import com.li2n.im_server.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,6 +25,8 @@ public class LoginListener implements ApplicationListener<LoginEvent> {
     private IMessageOfflineService iMessageOfflineService;
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+    @Autowired
+    private INoticeServerService noticeServerService;
 
     @Override
     public void onApplicationEvent(LoginEvent event) {
@@ -41,5 +45,6 @@ public class LoginListener implements ApplicationListener<LoginEvent> {
             iMessageOfflineService.clearOfflineMsg(username);
         }
 
+        noticeServerService.selectByUsername(username);
     }
 }

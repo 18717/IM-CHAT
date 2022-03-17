@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.li2n.im_server.pojo.model.FriendModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -45,9 +46,6 @@ public class NoticeFriend implements Serializable {
     @TableField("title")
     private String title;
 
-    @ApiModelProperty(value = "通知类型")
-    private String noticeType;
-
     @ApiModelProperty(value = "内容")
     @TableField("content")
     private String content;
@@ -72,9 +70,37 @@ public class NoticeFriend implements Serializable {
     @TableField("create_time")
     private LocalDateTime createTime;
 
-    @ApiModelProperty(value = "更新时间")
+    @ApiModelProperty(value = "创建时间")
     @TableField("update_time")
     private LocalDateTime updateTime;
+
+    @ApiModelProperty(value = "是否验证")
+    @TableField("is_verified")
+    private int verified;
+
+    @ApiModelProperty(value = "结果标记")
+    @TableField("is_flag")
+    private int flag;
+
+    @ApiModelProperty(value = "头像url")
+    @TableField("avatar_url")
+    private String avatarUrl;
+
+    @ApiModelProperty(value = "发送者昵称")
+    @TableField("send_nickname")
+    private String sendNickname;
+
+    @ApiModelProperty(value = "发送时间")
+    @TableField(exist = false)
+    private String sendTime;
+
+    @ApiModelProperty(value = "请求结果")
+    @TableField(exist = false)
+    private Boolean result;
+
+    @ApiModelProperty(value = "标记时间")
+    @TableField(exist = false)
+    private String flagTime;
 
 
 }
