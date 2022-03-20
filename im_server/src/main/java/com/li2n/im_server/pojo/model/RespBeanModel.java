@@ -50,6 +50,16 @@ public class RespBeanModel {
     }
 
     /**
+     * 成功返回结果
+     * @param obj 
+     * @author 一杯香梨
+     * @date 2022-3-17 下午 9:52
+     */
+    public static RespBeanModel success(Object obj) {
+        return new RespBeanModel(200,null, obj);
+    }
+
+    /**
      * 失败返回结果
      * @param message 
      * @author 一杯香梨

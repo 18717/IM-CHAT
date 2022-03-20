@@ -30,12 +30,12 @@ public class GroupController {
 
     @ApiOperation(value = "建群")
     @PostMapping("/found")
-    public RespBeanModel groupFound(GroupInfo groupInfo, String code) {
-        return groupService.foundGroup(groupInfo, code);
+    public RespBeanModel groupFound(@RequestBody GroupInfo groupInfo) {
+        return groupService.foundGroup(groupInfo);
     }
 
     @ApiOperation(value = "搜群")
-    @PostMapping("/search")
+    @GetMapping("/search")
     public RespPageBeanModel groupSearch(@RequestParam(defaultValue = "1") Integer currentPage,
                                          @RequestParam(defaultValue = "3") Integer size,
                                          QueryGroupModel model) {
@@ -44,7 +44,7 @@ public class GroupController {
 
     @ApiOperation(value = "加群")
     @PostMapping("/add")
-    public RespBeanModel groupAdd(GroupModel model) {
+    public RespBeanModel groupAdd(@RequestBody GroupModel model) {
         return groupService.joinGroup(model);
     }
 
