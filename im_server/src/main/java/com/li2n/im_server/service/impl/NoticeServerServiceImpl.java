@@ -8,6 +8,7 @@ import com.li2n.im_server.service.INoticeServerService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,9 @@ import java.util.List;
  */
 @Service
 public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, NoticeServer> implements INoticeServerService {
+
+    @Value("${im-redis-key.notice.server}")
+    private String serverNoticeKey;
 
     @Autowired
     private RedisCache redisCache;
@@ -63,7 +67,7 @@ public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, Not
             model.setPushTime(TimeFormat.localDateTimeToString(noticeServer.getSendTime()));
             noticeModels.add(model);
         }
-        String key = "notice-server:" + username;
+        String key = serverNoticeKey + username;
         List<NoticeModel> cacheNoticeList = redisCache.getCacheList(key);
         if (!cacheNoticeList.isEmpty()) {
             redisCache.deleteObject(key);

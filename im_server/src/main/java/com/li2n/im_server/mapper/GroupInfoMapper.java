@@ -35,6 +35,6 @@ public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
      *  @param gid
      * @param groupInfo
      */
-    void update(@Param("gid") String gid, @Param("groupInfo") GroupInfo groupInfo);
+    void updateMemberList(@Param("gid") String gid, @Param("groupInfo") GroupInfo groupInfo);
 
 }

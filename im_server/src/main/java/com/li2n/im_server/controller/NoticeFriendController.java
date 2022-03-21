@@ -8,6 +8,7 @@ import com.li2n.im_server.service.INoticeServerService;
 import com.li2n.im_server.utils.RedisCache;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +27,9 @@ import java.util.List;
 @RequestMapping("/notice-friend")
 public class NoticeFriendController {
 
+    @Value("${im-redis-key.notice.friend}")
+    private String friendNoticeKey;
+
     @Autowired
     private RedisCache redisCache;
     @Autowired
@@ -34,7 +38,7 @@ public class NoticeFriendController {
     @ApiOperation(value = "获取用户的所有好友通知")
     @GetMapping("/history/username")
     public List<NoticeFriend> getLoginUserHistoryNotice(String username) {
-        String key = "notice-friend:" + "," + username + ",";
+        String key = friendNoticeKey + "," + username + ",";
         List<NoticeFriend> cacheList = redisCache.getCacheList(key);
         if (cacheList.isEmpty()) {
             cacheList = noticeFriendService.selectByUsername(username);

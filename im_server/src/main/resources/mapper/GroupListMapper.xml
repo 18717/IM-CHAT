@@ -20,7 +20,7 @@
     </sql>
 
     <!-- 根据用户名更新用户群组列表 -->
-    <update id="update">
+    <update id="updateGroupList">
         UPDATE group_list
         SET gids        = #{groupList.gids},
             found_num   = #{groupList.foundNum},

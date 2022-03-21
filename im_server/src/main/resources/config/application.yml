@@ -55,5 +55,26 @@ jwt:
   # JWT 负载中拿到开头
   tokenHead: Bearer
 
+# 保存数据到redis中的key值
+im-redis-key:
+  login:
+    server: 'login:s-'
+    client: 'login:c-'
+  captcha:
+    server: 'captcha:server:'
+    client: 'captcha:client:'
+    register: 'captcha:register:'
+    group:
+      found: 'captcha:group:found:'
+      join: 'captcha:group:join:'
+  notice:
+    server: 'notice:server:'
+    friend: 'notice:friend:'
+    group: 'notice:group:'
+  usernames: 'usernames'
+
+
+
+
 
 

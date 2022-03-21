@@ -74,6 +74,22 @@ const store = new Vuex.Store({
             }
             state.noticeList[key].push(obj);
         },
+        addNoticeGroup(state, notice) {
+            let obj = JSON.parse(notice);
+            if (obj.verified === 1 && obj.confirm === 1) {
+                getRequest('/group/list?username=' + state.currentUser.username).then(groupList => {
+                    if (groupList) {
+                        state.groupList = groupList;
+                    }
+                    window.sessionStorage.setItem('group-data', JSON.stringify(groupList))
+                })
+            }
+            let key = 'group';
+            if (!state.noticeList[key]) {
+                Vue.set(state.noticeList, key, []);
+            }
+            state.noticeList[key].push(obj);
+        },
         // 初始化好友列表
         INIT_FRIEND_LIST(state, data) {
             if (data) {
@@ -176,6 +192,39 @@ const store = new Vuex.Store({
             }
             console.log("初始化好友通知完成")
         },
+        INIT_NOTICE_GROUP(state, data) {
+            if (data) {
+                let key = 'group';
+                if (!state.noticeList[key]) {
+                    Vue.set(state.noticeList, key, []);
+                }
+                for (let i = 0; i < data.length; i++) {
+                    let notice = data[i];
+                    state.noticeList[key].push({
+                        gid: notice.gid,
+                        title: notice.title,
+                        content: notice.content,
+                        sendTime: notice.sendTime,
+                        join: notice.join,
+                        quit: notice.quit,
+                        forceQuit: notice.forceQuit,
+                        confirm: notice.confirm,
+                        verified: notice.verified,
+                        receiverNickname: notice.receiverNickname,
+                        avatarUrl: notice.userInfo.avatar,
+                        senderNickname: notice.userInfo.nickname,
+                        gender: notice.userInfo.gender,
+                        senderUsername: notice.senderUsername,
+                        receiverUsername: notice.receiverUsername,
+                        groupName: notice.groupInfo.groupName,
+                        flag: notice.flag,
+                        flagTime: notice.sendTime,
+                        businessType: notice.businessType,
+                    })
+                }
+            }
+            console.log("初始化群通知完成")
+        },
     },
 
     actions: {
@@ -224,6 +273,9 @@ const store = new Vuex.Store({
                 context.state.stomp.subscribe('/user/topic/notice/friend', notice => {
                     context.commit('addNoticeFriend', notice.body);
                 });
+                context.state.stomp.subscribe('/user/topic/notice/group', notice => {
+                    context.commit('addNoticeGroup', notice.body);
+                });
 
                 let user;
                 getRequest('/client/login/info').then(loginInfo => {
@@ -244,6 +296,9 @@ const store = new Vuex.Store({
                         })
                         getRequest('/notice-friend/history/username?username=' + context.state.currentUser.username).then(noticeList => {
                             context.commit('INIT_NOTICE_FRIEND', noticeList)
+                        })
+                        getRequest('/notice-group/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                            context.commit('INIT_NOTICE_GROUP', noticeList)
                         })
                     })
                 })

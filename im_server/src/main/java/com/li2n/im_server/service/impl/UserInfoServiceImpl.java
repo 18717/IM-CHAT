@@ -67,6 +67,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     private ApplicationContext applicationContext;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+    @Value("${im-redis-key.login.server}")
+    private String serverLoginKey;
+    @Value("${im-redis-key.login.client}")
+    private String clientLoginKey;
+    @Value("${im-redis-key.captcha.server}")
+    private String serverLoginCaptcha;
+    @Value("${im-redis-key.captcha.client}")
+    private String clientCaptchaKey;
+    @Value("${im-redis-key.usernames}")
+    private String usernames;
 
     /**
      * 客户端登录
@@ -83,7 +93,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String code = model.getCode();
 
         // 从redisCache获取用户请求生成的验证码
-        String key = "client-captcha:" + username;
+        String key = clientCaptchaKey + username;
         String captcha = redisCache.getCacheObject(key);
         if ("".equals(code) || !captcha.equalsIgnoreCase(code)) {
             return RespBeanModel.error("验证码输入错误，请重新输入!");
@@ -112,6 +122,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     redisCache.setCacheObject("login:" + username, loginUser);
                     loginUser.setUsername(username);
                     loginUser.setPassword(null);
+
                 }
             }
         } else {
@@ -145,7 +156,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return RespBeanModel.error("未登录，请先登录!");
         }
         updateLoginCode(user.getUsername(), 0);
-        String redisKey = "login:c-" + user.getUsername();
+        String redisKey = clientLoginKey + user.getUsername();
         redisCache.deleteObject(redisKey);
         updateLoginCode(user.getUsername(), 0);
 
@@ -208,7 +219,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return RespBeanModel.error("旧密码与新密码相同，修改失败");
         }
         // 从redis中获取登录用户的信息
-        String key = "login:c-" + model.getUsername();
+        String key = clientLoginKey + model.getUsername();
         UserInfo user = redisCache.getCacheObject(key);
 
         if (!passwordEncoder.matches(model.getOld(), user.getPassword())) {
@@ -247,10 +258,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         user.setGender(model.getGender());
         user.setEmail(model.getEmail());
         // TODO 有朝一日再优化吧
-        if ("true".equals(model.getAdmin())) {
+        if (model.isAdmin()) {
             user.setAdmin(1);
         }
-        if ("true".equals(model.getDisable())) {
+        if (model.isDisable()) {
             user.setDisable(1);
         }
         user.setUpdateTime(TimeFormat.getLocalDateTime());
@@ -309,7 +320,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public List<UserInfo> selectUserList(Principal principal, QueryUserModel model) {
-        List<UserInfo> users = userMapper.selectList(model);
+        List<UserInfo> users = userMapper.selectUserList(model);
         for (UserInfo user : users) {
             user.setPassword(null);
         }
@@ -331,7 +342,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String code = model.getCode();
 
         // 从redisCache获取用户请求生成的验证码
-        String key = "server-captcha:" + username;
+        String key = serverLoginCaptcha + username;
         String captcha = redisCache.getCacheObject(key);
         if ("".equals(code) || !captcha.equalsIgnoreCase(code)) {
             redisCache.deleteObject(key);
@@ -384,7 +395,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UsernamePasswordAuthenticationToken authentication =
                 (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         UserInfo user = (UserInfo) authentication.getPrincipal();
-        String redisKey = "login:s-" + user.getUsername();
+        String redisKey = serverLoginKey + user.getUsername();
         redisCache.deleteObject(redisKey);
         return RespBeanModel.success("注销成功");
     }
@@ -468,7 +479,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public UserInfo selectOne(String username) {
-        return userMapper.selectOne(username);
+        return userMapper.selectUserOne(username);
     }
 
     /**
@@ -512,7 +523,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public List<String> usernameList() {
-        return redisCache.getCacheList("usernames");
+        return redisCache.getCacheList(usernames);
     }
 
     /**
@@ -520,8 +531,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return
      */
     private void saveUsernamesToRedis() {
-        redisCache.deleteObject("usernames");
-        redisCache.setCacheList("usernames", userMapper.selectUsernameAll());
+        redisCache.deleteObject(usernames);
+        redisCache.setCacheList(usernames, userMapper.selectUsernameAll());
     }
 
 }

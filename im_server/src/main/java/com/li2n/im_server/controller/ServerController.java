@@ -6,6 +6,7 @@ import com.li2n.im_server.service.IUserInfoService;
 import com.li2n.im_server.utils.RedisCache;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +23,9 @@ import java.util.List;
 @RequestMapping("/server")
 public class ServerController {
 
+    @Value("${im-redis-key.login.server}")
+    private String serverLoginKey;
+
     @Autowired
     private IUserInfoService userService;
     @Autowired
@@ -34,7 +38,7 @@ public class ServerController {
             return null;
         }
         String username = principal.getName();
-        UserInfo user = redisCache.getCacheObject("login:s-" + username);
+        UserInfo user = redisCache.getCacheObject(serverLoginKey + username);
         user.setPassword(null);
         return user;
     }
@@ -53,7 +57,7 @@ public class ServerController {
     @ApiOperation(value = "更新用户信息")
     @PutMapping("/update/user")
     public RespBeanModel updateUser(@RequestBody EditUserInfoModel model) {
-        Boolean updateResult = userService.update(model, "login:s-");
+        Boolean updateResult = userService.update(model, serverLoginKey);
         if (updateResult) {
             return RespBeanModel.success("更新数据成功");
         } else {

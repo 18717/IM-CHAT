@@ -37,6 +37,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private String tokenHeader;
     @Value("${jwt.tokenHead}")
     private String tokenHead;
+    @Value("${im-redis-key.login.server}")
+    private String serverLoginKey;
+    @Value("${im-redis-key.login.client}")
+    private String clientLoginKey;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

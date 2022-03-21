@@ -30,7 +30,6 @@ public class NoticeFriend implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "id")
-    @TableField("id")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 

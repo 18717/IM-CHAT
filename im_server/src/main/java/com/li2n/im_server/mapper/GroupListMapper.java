@@ -23,6 +23,6 @@ public interface GroupListMapper extends BaseMapper<GroupList> {
      * @param username
      * @param groupList
      */
-    void update(@Param("username") String username, @Param("groupList") GroupList groupList);
+    void updateGroupList(@Param("username") String username, @Param("groupList") GroupList groupList);
 
 }

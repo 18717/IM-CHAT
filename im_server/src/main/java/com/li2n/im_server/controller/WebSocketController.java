@@ -1,16 +1,15 @@
 package com.li2n.im_server.controller;
 
-import com.li2n.im_server.pojo.MessageTotal;
-import com.li2n.im_server.pojo.NoticeFriend;
-import com.li2n.im_server.pojo.NoticeServer;
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.pojo.*;
 import com.li2n.im_server.pojo.model.FriendModel;
+import com.li2n.im_server.pojo.model.GroupModel;
 import com.li2n.im_server.pojo.model.MessageModel;
 import com.li2n.im_server.pojo.model.NoticeModel;
 import com.li2n.im_server.service.*;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
@@ -29,6 +28,17 @@ import java.util.Objects;
 @Controller
 public class WebSocketController {
 
+    @Value("${im-redis-key.notice.server}")
+    private String serverNoticeKey;
+    @Value("${im-redis-key.notice.friend}")
+    private String friendNoticeKey;
+    @Value("${im-redis-key.notice.group}")
+    private String groupNoticeKey;
+    @Value("${im-redis-key.usernames}")
+    private String usernames;
+    @Value("${im-redis-key.login.client}")
+    private String clientLoginKey;
+
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
     @Autowired
@@ -43,6 +53,10 @@ public class WebSocketController {
     private INoticeServerService noticeServerService;
     @Autowired
     private IUserFriendListService userFriendListService;
+    @Autowired
+    private IGroupInfoService groupInfoService;
+    @Autowired
+    private INoticeGroupService noticeGroupService;
 
     @MessageMapping("/ws/client/chat")
     public void handleMsg(Authentication authentication, MessageModel model) {
@@ -64,7 +78,7 @@ public class WebSocketController {
         model.setSendNickname(user.getNickname());
         model.setSendUsername(user.getUsername());
 
-        UserInfo receiveUser = redisCache.getCacheObject("login:c-" + model.getReceiveUsername());
+        UserInfo receiveUser = redisCache.getCacheObject(clientLoginKey + model.getReceiveUsername());
         if (!Objects.isNull(receiveUser)) {
             msg.setOnline(1);
             simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/queue/chat", model);
@@ -79,7 +93,7 @@ public class WebSocketController {
     public void serverToUser(NoticeModel model) {
 
         String receiveUsername = model.getReceiveUsername();
-        List<String> usernames = redisCache.getCacheList("usernames");
+        List<String> usernameList = redisCache.getCacheList(usernames);
         NoticeServer noticeServer = new NoticeServer();
         noticeServer.setTitle(model.getTitle());
         noticeServer.setSendUsername("server");
@@ -89,10 +103,10 @@ public class WebSocketController {
         noticeServer.setContent(model.getContent());
         noticeServer.setContentType("text");
         noticeServer.setSendTime(TimeFormat.stringToLocalDateTime(model.getPushTime()));
-        noticeServer.setPushNum(usernames.size());
+        noticeServer.setPushNum(usernameList.size());
 
         model.setPushTime(TimeFormat.localDateTimeToString(noticeServer.getSendTime()));
-        model.setPushNum(usernames.size());
+        model.setPushNum(usernameList.size());
 
         if (!"all".equals(model.getPush())) {
             receiveUsername = receiveUsername.substring(1, receiveUsername.length() - 1);
@@ -104,7 +118,7 @@ public class WebSocketController {
                 simpMessagingTemplate.convertAndSendToUser(username, "/topic/notice/server", model);
             }
         } else {
-            for (String username : usernames) {
+            for (String username : usernameList) {
                 updateRedisServerNotice(username, model);
             }
             simpMessagingTemplate.convertAndSend("/topic/chat", model);
@@ -126,7 +140,7 @@ public class WebSocketController {
     @MessageMapping("/ws/friend/send")
     public void sendFriendRequest(FriendModel model) {
 
-        UserInfo receiveUser = redisCache.getCacheObject("login:c-" + model.getReceiveUsername());
+        UserInfo receiveUser = redisCache.getCacheObject(clientLoginKey + model.getReceiveUsername());
         NoticeFriend noticeFriend = new NoticeFriend();
         noticeFriend.setAvatarUrl(model.getAvatarUrl());
         noticeFriend.setSendNickname(model.getSendNickname());
@@ -185,6 +199,58 @@ public class WebSocketController {
 
     }
 
+    @MessageMapping("/ws/group/send")
+    public void sendGroupRequest(GroupModel model) {
+        NoticeGroup noticeGroup = new NoticeGroup();
+        noticeGroup.setReceiverNickname(model.getSenderNickname());
+        noticeGroup.setSenderUsername(model.getSenderUsername());
+        noticeGroup.setReceiverUsername(model.getReceiverUsername());
+        noticeGroup.setGid(model.getGid());
+        noticeGroup.setGroupName(model.getGroupName());
+        noticeGroup.setTitle(model.getTitle());
+        noticeGroup.setContent(model.getContent());
+        noticeGroup.setJoin(0);
+        noticeGroup.setQuit(0);
+        noticeGroup.setForceQuit(0);
+        noticeGroup.setOnline(null);
+        noticeGroup.setFlag(1);
+        noticeGroup.setVerified(1);
+        noticeGroup.setConfirm(1);
+        noticeGroup.setCreateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
+        noticeGroup.setSendTime(model.getSendTime());
+
+        // 业务判断处理
+        if (model.isJoin()) {
+            noticeGroup.setJoin(1);
+            if (model.getConfirm() != null) {
+                if (model.isConfirm()) {
+                    groupInfoService.joinGroup(model);
+                }
+                noticeGroup.setFlag(1);
+                noticeGroup.setConfirm(model.getConfirm());
+                noticeGroup.setFlagTime(model.getFlagTime());
+                noticeGroup.setUpdateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
+                noticeGroupService.updateNoticeGroup(noticeGroup);
+            } else {
+                model.setFlagTime(model.getSendTime());
+                noticeGroup.setFlagTime(model.getFlagTime());
+                noticeGroup.setFlag(null);
+                noticeGroup.setVerified(null);
+                noticeGroup.setConfirm(null);
+            }
+        } else if (model.isQuit()) {
+            noticeGroup.setQuit(1);
+        } else if (model.isForceQuit()) {
+            noticeGroup.setForceQuit(1);
+        }
+
+        // 操作数据库和redis
+        noticeGroupService.addNoticeRecord(noticeGroup);
+        updateRedisGroupNotice(model.getReceiverUsername(), noticeGroup);
+
+        simpMessagingTemplate.convertAndSendToUser(model.getReceiverUsername(), "/topic/notice/group", model);
+    }
+
     /**
      * 更新redis中的系统通知
      *
@@ -192,7 +258,7 @@ public class WebSocketController {
      * @param model
      */
     private void updateRedisServerNotice(String username, NoticeModel model) {
-        String key = "notice-server:" + "," + username + ",";
+        String key = serverNoticeKey + "," + username + ",";
         List<NoticeModel> cacheList = redisCache.getCacheList(key);
         if (cacheList.isEmpty()) {
             cacheList = noticeServerService.selectByUsername(username);
@@ -209,12 +275,30 @@ public class WebSocketController {
      * @param noticeFriend
      */
     private void updateRedisFriendNotice(String username, NoticeFriend noticeFriend) {
-        String key = "notice-friend:" + "," + username + ",";
+        String key = friendNoticeKey + "," + username + ",";
         List<NoticeFriend> cacheList = redisCache.getCacheList(key);
         if (cacheList.isEmpty()) {
             noticeFriendService.selectByUsername(username);
         } else {
             cacheList.add(noticeFriend);
+            redisCache.deleteObject(key);
+            redisCache.setCacheList(key, cacheList);
+        }
+    }
+
+    /**
+     * 更新redis中的群通知
+     *
+     * @param username
+     * @param noticeGroup
+     */
+    private void updateRedisGroupNotice(String username, NoticeGroup noticeGroup) {
+        String key = groupNoticeKey + "," + username + ",";
+        List<NoticeGroup> cacheList = redisCache.getCacheList(key);
+        if (cacheList.isEmpty()) {
+            noticeGroupService.selectByUsername(username);
+        } else {
+            cacheList.add(noticeGroup);
             redisCache.deleteObject(key);
             redisCache.setCacheList(key, cacheList);
         }
