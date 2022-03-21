@@ -38,7 +38,7 @@
     </select>
 
     <!-- 根据Gid更新群成员列表 -->
-    <update id="update">
+    <update id="updateMemberList">
         UPDATE group_info
         SET members     = #{groupInfo.members},
             member_num  = #{groupInfo.memberNum},

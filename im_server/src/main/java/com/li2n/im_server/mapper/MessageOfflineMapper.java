@@ -25,7 +25,7 @@ public interface MessageOfflineMapper extends BaseMapper<MessageOffline> {
      * @param username
      * @return
      */
-    List<MessageOffline> selectList(@Param("username") String username);
+    List<MessageOffline> selectOfflineMsgList(@Param("username") String username);
 
     /**
      * 根据用户名删除离线消息记录

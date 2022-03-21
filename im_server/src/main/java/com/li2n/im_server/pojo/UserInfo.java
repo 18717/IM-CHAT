@@ -35,7 +35,6 @@ public class UserInfo implements Serializable, UserDetails {
 
     @ApiModelProperty(value = "计数id")
     @TableId(value = "id", type = IdType.AUTO)
-    @TableField("id")
     private Long id;
 
     @ApiModelProperty(value = "用户唯一识别码")

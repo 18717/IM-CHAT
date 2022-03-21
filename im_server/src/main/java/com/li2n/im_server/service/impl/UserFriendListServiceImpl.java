@@ -95,7 +95,7 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
         }
         String[] split = friends.split(",");
         for (String str : split) {
-            UserInfo user = userMapper.selectOne(str);
+            UserInfo user = userMapper.selectUserOne(str);
             user.setPassword(null);
             users.add(user);
         }

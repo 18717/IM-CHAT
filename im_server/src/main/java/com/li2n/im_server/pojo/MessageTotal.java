@@ -30,7 +30,6 @@ public class MessageTotal implements Serializable {
 
     @ApiModelProperty(value = "id")
     @TableId(value = "id", type = IdType.AUTO)
-    @TableField("id")
     private Long id;
 
     @ApiModelProperty(value = "发送者用昵称")

@@ -19,7 +19,7 @@
         id, send_nickname, send_username, receive_username, message_content_type, content, file_url, send_time
     </sql>
 
-    <select id="selectList" resultMap="BaseResultMap">
+    <select id="selectOfflineMsgList" resultMap="BaseResultMap">
         SELECT *
         FROM message_offline
         WHERE message_offline.receive_username = #{username}

@@ -43,7 +43,7 @@
     </select>
 
     <!-- 普通查询用户 -->
-    <select id="selectList" resultMap="BaseResultMap">
+    <select id="selectUserList" resultMap="BaseResultMap">
         SELECT *
         FROM user_info u
         WHERE
@@ -60,7 +60,7 @@
     </select>
 
     <!-- 查询某个用户 -->
-    <select id="selectOne" resultMap="BaseResultMap">
+    <select id="selectUserOne" resultMap="BaseResultMap">
         SELECT *
         FROM user_info
         WHERE username = #{username}

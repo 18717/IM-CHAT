@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserInfo user = userMapper.selectOne(username);
+        UserInfo user = userMapper.selectUserOne(username);
         //TODO 查询对应的权限信息
 
 

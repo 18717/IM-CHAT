@@ -38,4 +38,7 @@ public class EditUserInfoModel {
     @ApiModelProperty(value = "是否禁用", required = true)
     String disable;
 
+    public Boolean isAdmin() { return "true".equals(this.admin); }
+    public Boolean isDisable() { return "true".equals(this.disable); }
+
 }

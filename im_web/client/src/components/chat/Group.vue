@@ -77,7 +77,7 @@
                 <b><i class="el-icon-cloudy"></i>&emsp;{{ group.groupName }}</b>
               </el-col>
               <el-col :span="6" style="text-align: right">
-                <el-button type="text" @click="sendAddGroupRequest()">申请加群</el-button>
+                <el-button type="text" @click="sendJoinGroupRequest(group)">申请加群</el-button>
               </el-col>
             </el-row>
 
@@ -235,7 +235,7 @@ export default {
     return {
       dialogVisible: false,
       // 群查询参数
-      query: {condition: 'gid', content: 'im-chat-666'},
+      query: {condition: 'gid', content: ' '},
       // 分页参数
       total: 0,
       currentPage: 1,
@@ -301,35 +301,38 @@ export default {
       this.foundGroupRequest = {};
     },
     // 申请加群
-    sendAddGroupRequest() {
-      let friendParams = {};
-      this.$prompt('备注信息', '添加好友', {
+    sendJoinGroupRequest(group) {
+      let groupParams = {};
+      this.$prompt('入群验证信息', '申请入群', {
         confirmButtonText: '发送请求',
         cancelButtonText: '取消',
-      }).then(({value}) => {
-        // 发送好友请求
-        friendParams.avatarUrl = this.loginInfo.avatar;
-        friendParams.sendNickname = this.loginInfo.nickname;
-        friendParams.sendUsername = this.loginInfo.username;
-        friendParams.receiveUsername = user.username;
-        friendParams.flag = 0;
-        friendParams.content = "好友申请";
-        friendParams.comment = value;
-        friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-        friendParams.requestType = 'add';
-        this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
-        this.$message({
-          type: 'success',
-          message: '向用户【' + user.nickname + '】发送好友请求成功！'
-        });
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '取消操作'
-        });
-      });
-
-
+      })
+          .then(({value}) => {
+            // 发送入群申请
+            groupParams.avatarUrl = this.currentUser.avatar;
+            groupParams.senderNickname = this.currentUser.nickname;
+            groupParams.senderUsername = this.currentUser.username;
+            groupParams.gender = this.currentUser.gender;
+            groupParams.receiverUsername = group.masterUsername;
+            groupParams.groupName = group.groupName;
+            groupParams.gid = group.gid;
+            groupParams.title = "入群申请";
+            groupParams.content = value;
+            groupParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+            groupParams.businessType = 'join';
+            console.log(groupParams)
+            this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(groupParams));
+            this.$message({
+              type: 'success',
+              message: '已向群聊【' + group.groupName + '】发送加入申请！'
+            });
+          })
+          .catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消操作'
+            });
+          });
     },
     // 分页
     currentChange(currentPage) {

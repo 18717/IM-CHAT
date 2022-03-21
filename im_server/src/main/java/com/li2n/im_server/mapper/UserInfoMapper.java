@@ -40,14 +40,14 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      * @param params 查询参数
      * @return
      */
-    List<UserInfo> selectList(@Param("params") QueryUserModel params);
+    List<UserInfo> selectUserList(@Param("params") QueryUserModel params);
 
     /**
      * 查询某个用户
      * @param username
      * @return
      */
-    UserInfo selectOne(@Param("username") String username);
+    UserInfo selectUserOne(@Param("username") String username);
 
     /**
      * 获取所有的用户名（不包括禁用和注销的用户）

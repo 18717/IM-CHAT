@@ -14,6 +14,7 @@ import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import com.li2n.im_server.utils.UID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,6 +46,9 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      */
     private static final int GROUP_USER_MAX_NUM = 10;
 
+    @Value("${im-redis-key.captcha.group.found}")
+    private String foundGroupCaptcha;
+
     @Autowired
     private RedisCache redisCache;
     @Autowired
@@ -60,7 +64,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      */
     @Override
     public RespBeanModel foundGroup(GroupInfo groupInfo) {
-        String captchaKey = "group-found:" + groupInfo.getMasterUsername();
+        String captchaKey = foundGroupCaptcha + groupInfo.getMasterUsername();
         String captcha = redisCache.getCacheObject(captchaKey);
         if ("".equals(groupInfo.getCode()) || !captcha.equalsIgnoreCase(groupInfo.getCode())) {
             return RespBeanModel.error("验证码输入错误，请重新输入!");
@@ -137,16 +141,10 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     @Override
     public RespBeanModel joinGroup(GroupModel model) {
 
-        if (!model.isConfirm()) {
-            //TODO 管理员拒绝加入群聊，向用户发出系统通知
-            System.out.println("管理员拒绝加入群聊");
-            return RespBeanModel.error("非常抱歉，管理员已拒绝您的入群申请。");
-        }
-        //TODO 管理员同意加入群聊，向用户发出系统通知
         String oldGroupMembers = getGroupByGid(model.getGid()).getMembers();
         String[] memberArr = oldGroupMembers.split(",");
         for (String str : memberArr) {
-            if (str.equals(model.getSendUsername())) {
+            if (str.equals(model.getReceiverUsername())) {
                 return RespBeanModel.error("该用户已在群聊中。");
             }
         }
@@ -159,9 +157,9 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         groupMembers = new StringBuilder();
         groupMembers.append(oldGroupMembers);
         if (GROUP_USER_MAX_NUM - oldGroupMemberNum != 1) {
-            groupMembers.append(model.getSendUsername()).append(",");
+            groupMembers.append(model.getReceiverUsername()).append(",");
         } else {
-            groupMembers.append(model.getSendUsername());
+            groupMembers.append(model.getReceiverUsername());
         }
         GroupInfo groupInfo = new GroupInfo();
         groupInfo.setGid(model.getGid());
@@ -170,12 +168,12 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         groupInfo.setUpdateTime(LocalDateTime.now());
 
         // 更新入群用户的群列表
-        String oldGids = getGroupListByUsername(model.getSendUsername()).getGids();
-        int foundNum = getFoundGroupNum(model.getSendUsername());
-        int joinNum = getGroupNum(model.getSendUsername()) - foundNum;
+        String oldGids = getGroupListByUsername(model.getReceiverUsername()).getGids();
+        int foundNum = getFoundGroupNum(model.getReceiverUsername());
+        int joinNum = getGroupNum(model.getReceiverUsername()) - foundNum;
 
-        groupInfoMapper.update(model.getGid(), groupInfo);
-        updateGroupList(model.getSendUsername(), model.getGid(), foundNum, joinNum + 1);
+        groupInfoMapper.updateMemberList(model.getGid(), groupInfo);
+        updateGroupList(model.getReceiverUsername(), model.getGid(), foundNum, joinNum + 1);
         return RespBeanModel.error("管理员已同意您的入群申请。");
     }
 
@@ -195,7 +193,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         String[] gids = gidStr.split(",");
         for (String gid : gids) {
             GroupInfo groupInfo = groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid));
-            groupInfo.setMemberArr(getGroupMembers(username, gid));
+            groupInfo.setMemberArr(getGroupMembers(gid));
             groups.add(groupInfo);
         }
         return groups;
@@ -256,16 +254,16 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * 根据Gid获取群成员用户名
      *
      * @param gid
-     * @param username
      * @return
      */
-    private List<String> getGroupMembers(String username, String gid) {
-        int index = username.length() + 1;
+    private List<String> getGroupMembers(String gid) {
         String members = getGroupByGid(gid).getMembers();
+        int index = members.indexOf(",");
+
         if (members.length() < index + 1) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(Arrays.asList(members.substring(index).split(",")));
+        return new ArrayList<>(Arrays.asList(members.substring(index + 1).split(",")));
     }
 
     /**
@@ -300,7 +298,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         groupList.setJoinNum(joinNum);
         groupList.setTotalNum(foundNum + joinNum);
         groupList.setUpdateTime(LocalDateTime.now());
-        groupListMapper.update(username, groupList);
+        groupListMapper.updateGroupList(username, groupList);
     }
 
 }

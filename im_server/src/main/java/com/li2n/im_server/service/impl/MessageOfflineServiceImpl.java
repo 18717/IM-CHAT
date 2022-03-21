@@ -8,6 +8,7 @@ import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.service.IMessageOfflineService;
 import com.li2n.im_server.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,9 @@ import java.util.List;
 @Service
 public class MessageOfflineServiceImpl extends ServiceImpl<MessageOfflineMapper, MessageOffline> implements IMessageOfflineService {
 
+    @Value("${im-redis-key.login.client}")
+    private String clientLoginKey;
+
     @Autowired
     private MessageOfflineMapper messageOfflineMapper;
     @Autowired
@@ -35,7 +39,7 @@ public class MessageOfflineServiceImpl extends ServiceImpl<MessageOfflineMapper,
      */
     @Override
     public void insertMsg(MessageTotal msg) {
-        UserInfo user = redisCache.getCacheObject("login:c-" + msg.getSendUsername());
+        UserInfo user = redisCache.getCacheObject(clientLoginKey + msg.getSendUsername());
         MessageOffline messageOffline = new MessageOffline();
         messageOffline.setSendNickname(user.getNickname());
         messageOffline.setSendUsername(msg.getSendUsername());
@@ -55,7 +59,7 @@ public class MessageOfflineServiceImpl extends ServiceImpl<MessageOfflineMapper,
      */
     @Override
     public List<MessageOffline> selectByColumn(String username) {
-        return messageOfflineMapper.selectList(username);
+        return messageOfflineMapper.selectOfflineMsgList(username);
     }
 
     /**

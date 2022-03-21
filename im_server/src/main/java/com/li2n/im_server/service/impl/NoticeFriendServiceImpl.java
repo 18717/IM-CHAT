@@ -10,6 +10,7 @@ import com.li2n.im_server.service.INoticeFriendService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ import java.util.List;
  */
 @Service
 public class NoticeFriendServiceImpl extends ServiceImpl<NoticeFriendMapper, NoticeFriend> implements INoticeFriendService {
+
+    @Value("${im-redis-key.notice.friend}")
+    private String friendNoticeKey;
 
     @Autowired
     private NoticeFriendMapper noticeFriendMapper;
@@ -60,7 +64,7 @@ public class NoticeFriendServiceImpl extends ServiceImpl<NoticeFriendMapper, Not
             noticeServer.setSendTime(TimeFormat.localDateTimeToString(noticeServer.getCreateTime()));
             noticeFriends.add(noticeServer);
         }
-        String key = "notice-friend:" + "," + username + ",";
+        String key = friendNoticeKey + "," + username + ",";
         List<NoticeFriend> cacheNoticeList = redisCache.getCacheList(key);
         if (!cacheNoticeList.isEmpty()) {
             redisCache.deleteObject(key);
