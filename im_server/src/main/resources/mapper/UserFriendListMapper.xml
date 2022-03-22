@@ -17,7 +17,7 @@
     </sql>
 
     <!-- 更新好友列表 -->
-    <update id="updateByUsername">
+    <update id="updateFriendsByUsername">
         UPDATE user_friend_list
         SET friends     = #{friends},
             update_time = #{updateTime}

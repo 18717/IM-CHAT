@@ -7,11 +7,13 @@ import com.li2n.im_server.pojo.model.RespBeanModel;
 import com.li2n.im_server.service.IUserFriendListService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -28,6 +30,9 @@ public class UserFriendListController {
 
     @Autowired
     private IUserFriendListService friendService;
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
 
     @ApiOperation(value = "添加好友")
     @PostMapping("/add")
@@ -39,6 +44,12 @@ public class UserFriendListController {
             return RespBeanModel.success("添加好友失败，用户好友位不足");
         }
 
+    }
+
+    @ApiOperation(value = "解除好友关系")
+    @PostMapping("/del")
+    public void friendDel(Principal principal, String username) {
+        friendService.delFriend(principal, username);
     }
 
     @ApiOperation(value = "获取用户好友列表")

@@ -26,6 +26,6 @@ public interface UserFriendListMapper extends BaseMapper<UserFriendList> {
      * @param friends
      * @param updateTime
      */
-    void updateByUsername(@Param("username") String username, @Param("friends") String friends, @Param("updateTime") LocalDateTime updateTime);
+    void updateFriendsByUsername(@Param("username") String username, @Param("friends") String friends, @Param("updateTime") LocalDateTime updateTime);
 
 }
