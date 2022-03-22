@@ -55,6 +55,7 @@ export default {
 
 <style>
 #card {
+  width: 100%;
   padding: 10px;
   line-height: 40px;
 }

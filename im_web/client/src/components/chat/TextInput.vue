@@ -52,7 +52,7 @@ export default {
     }
   },
   computed: mapState([
-    'currentSession'
+    'currentUser'
   ]),
   mounted() {
     this.loginInfo = JSON.parse(window.sessionStorage.getItem('login-user'));
@@ -64,7 +64,7 @@ export default {
           Message.error("请输入需要发送的内容！")
         } else {
           let msgObj = {};
-          msgObj.receiveUsername = this.currentSession.username;
+          msgObj.receiveUsername = this.currentUser.username;
           msgObj.messageContentType = "text"
           msgObj.content = this.content;
           msgObj.fileUrl = "";
@@ -95,7 +95,7 @@ export default {
     // 发送文件信息
     sendFile(response) {
       let sendInfo = {};
-      sendInfo.receiveUsername = this.currentSession.username;
+      sendInfo.receiveUsername = this.currentUser.username;
       if (this.param.type === "img") {
         sendInfo.messageContentType = "img";
         sendInfo.content = this.filename;

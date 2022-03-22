@@ -10,22 +10,19 @@
 
     <!-- 群列表 -->
     <el-main class="group-list">
-      <el-collapse>
-        <el-collapse-item v-for="group in groupList" @click="checkedGroup(group)" class="group-item">
-          <template slot="title">
-            <i class="el-icon-cloudy"></i> <span>{{ group.groupName }}</span>
-          </template>
-          <li>
-            <el-col :span="12"><b>{{ group.masterUsername }}</b></el-col>
-            <el-col :span="12" style="text-align: right; padding-right: 10px">
-              <el-tag size="small">群主</el-tag>
-            </el-col>
-          </li>
-          <li v-for="member in group.memberArr">{{ member }}</li>
-        </el-collapse-item>
 
-        <el-divider><i class="el-icon-sunrise"></i></el-divider>
-      </el-collapse>
+      <div v-for="group in groupList"
+           @click="checkedGroup(group)">
+        <el-button class="group-item" :class="{ activeItem: currentGroup ? group.gid === currentGroup.gid : false }">
+          <div style="width: 10%; display: inline-block; text-align: left"><i class="el-icon-cloudy"></i></div>
+          <div style="width: 90%; display: inline-block; text-align: left">
+            <el-badge :is-dot="isDot[group.gid]">
+              <p>{{ group.groupName }}</p>
+            </el-badge>
+          </div>
+        </el-button>
+      </div>
+
     </el-main>
 
     <!-- 搜群/建群 -->
@@ -266,13 +263,16 @@ export default {
     }
   },
   computed: mapState([
-    'currentUser',
+    'currentLogin',
+    'currentGroup',
     'groupList',
+    'isDot',
   ]),
   methods: {
 
-    checkedGroup() {
-
+    // 当前选中的群聊
+    checkedGroup(group) {
+      this.$store.commit('changeCurrentGroup', group);
     },
 
     // 搜索
@@ -309,10 +309,10 @@ export default {
       })
           .then(({value}) => {
             // 发送入群申请
-            groupParams.avatarUrl = this.currentUser.avatar;
-            groupParams.senderNickname = this.currentUser.nickname;
-            groupParams.senderUsername = this.currentUser.username;
-            groupParams.gender = this.currentUser.gender;
+            groupParams.avatarUrl = this.currentLogin.avatar;
+            groupParams.senderNickname = this.currentLogin.nickname;
+            groupParams.senderUsername = this.currentLogin.username;
+            groupParams.gender = this.currentLogin.gender;
             groupParams.receiverUsername = group.masterUsername;
             groupParams.groupName = group.groupName;
             groupParams.gid = group.gid;
@@ -344,7 +344,7 @@ export default {
       this.groupInfo = {};
     },
     toFound() {
-      this.groupInfo.masterUsername = this.currentUser.username;
+      this.groupInfo.masterUsername = this.currentLogin.username;
       this.postRequest('/group/found', this.groupInfo).then(resp => {
         if (resp) {
           this.foundGroupRequest = resp.obj;
@@ -361,7 +361,7 @@ export default {
       })
     },
     updateCaptcha() {
-      this.captchaUrl = '/captcha/group/found?username=' + this.currentUser.username + '?time=' + new Date();
+      this.captchaUrl = '/captcha/group/found?username=' + this.currentLogin.username + '?time=' + new Date();
     },
   }
 }
@@ -411,7 +411,7 @@ a {
   margin-bottom: 25px;
 }
 
-.group-desc {
+.group-container .group-desc {
   background-color: #ecf5ff;
   display: inline-block;
   height: auto;
@@ -453,6 +453,17 @@ a {
   border-radius: 3px;
 }
 
+.group-item {
+  width: 100%;
+  padding: 0 20px 0 20px !important;
+  background: none !important;
+  border: 0 !important;
+}
+
+.group-item:hover {
+  background-color: rgba(89, 89, 89, 0.3) !important;
+}
+
 .el-collapse {
   border: 0 !important;
 }
@@ -479,5 +490,9 @@ a {
   margin-top: 5px;
   padding-left: 22px;
   border-radius: 3px;
+}
+
+.activeItem {
+  background-color: rgba(89, 89, 89, 0.3) !important;
 }
 </style>

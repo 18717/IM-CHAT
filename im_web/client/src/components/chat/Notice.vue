@@ -337,7 +337,7 @@ export default {
     ...mapState({
       noticeList: 'noticeList',
       friendList: 'friendList',
-      currentUser: 'currentUser',
+      currentLogin: 'currentLogin',
     }),
   },
 
@@ -357,7 +357,7 @@ export default {
       this.dialogFriendNotice = true;
       this.noticeFriend = notice;
       if (notice.add === 1) {
-        let user = this.currentUser;
+        let user = this.currentLogin;
         this.resultFriendNotice.sendUsername = user.username;
         this.resultFriendNotice.sendNickname = user.nickname;
         this.resultFriendNotice.receiveUsername = notice.sendUsername;
@@ -396,7 +396,7 @@ export default {
       resultFriendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(resultFriendNotice));
       this.$message.success("已同意 " + resultFriendNotice.receiveUsername + "的好友请求")
-      this.getRequest('/friend/list?username=' + this.currentUser.username).then(friendList => {
+      this.getRequest('/friend/list?username=' + this.currentLogin.username).then(friendList => {
         this.$store.commit('INIT_FRIEND_LIST', friendList)
       })
       this.dialogFriendNotice = false;
@@ -405,7 +405,7 @@ export default {
     showGroupNotice(notice) {
       this.noticeGroup = notice;
       if (notice.join) {
-        let user = this.currentUser;
+        let user = this.currentLogin;
         this.resultGroupNotice.senderUsername = user.username;
         this.resultGroupNotice.senderNickname = user.nickname;
         this.resultGroupNotice.avatarUrl = user.avatar;
@@ -450,7 +450,7 @@ export default {
       resultGroupNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(resultGroupNotice));
       this.$message.success("已同意 " + resultGroupNotice.receiverNickname + " 的入群申请")
-      this.getRequest('/group/list?username=' + this.currentUser.username).then(groupList => {
+      this.getRequest('/group/list?username=' + this.currentLogin.username).then(groupList => {
         this.$store.commit('INIT_GROUP_LIST', groupList)
       })
       this.dialogFriendNotice = false;

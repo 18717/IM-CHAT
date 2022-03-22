@@ -20,9 +20,15 @@ const store = new Vuex.Store({
         // 群聊列表
         groupList: [],
         // 当前登录用户
-        currentUser: null,
+        currentLogin: null,
+        // 是否显示当前选中聊天的对象信息
+        showInfo: false,
+        // 聊天类型
+        chatType: null,
         // 当前选中的聊天用户
-        currentSession: null,
+        currentUser: null,
+        // 当前选中的群聊
+        currentGroup: null,
         // 服务器连接
         stomp: null,
         // 消息未读标识
@@ -31,12 +37,32 @@ const store = new Vuex.Store({
 
     mutations: {
         // 设置消息未读小红点
-        changeCurrentSession(state, currentSession) {
-            state.currentSession = currentSession;
-            Vue.set(state.isDot, currentSession.username + '#' + state.currentUser.username, false);
+        changeCurrentUser(state, currentUser) {
+            if (currentUser != null) {
+                state.chatType = 'private';
+            } else {
+                state.chatType = null;
+            }
+            state.currentUser = currentUser;
+            Vue.set(state.isDot, currentUser.username + '#' + state.currentLogin.username, false);
+        },
+        changeCurrentGroup(state, currentGroup) {
+            if (currentGroup != null) {
+                state.chatType = 'public';
+            } else {
+                state.chatType = null;
+            }
+            state.currentGroup = currentGroup;
+            Vue.set(state.isDot, currentGroup.gid, false);
+        },
+        closeInfo(state) {
+            state.showInfo = false;
+        },
+        showInfo(state) {
+            state.showInfo = !state.showInfo;
         },
         addMessage(state, msg) {
-            let key = state.currentUser.username + '#' + msg.receiveUsername;
+            let key = state.currentLogin.username + '#' + msg.receiveUsername;
             let msgArr = state.msgList[key];
             if (!msgArr) {
                 Vue.set(state.msgList, key, []);
@@ -61,7 +87,7 @@ const store = new Vuex.Store({
         addNoticeFriend(state, notice) {
             let obj = JSON.parse(notice);
             if (obj.verified === 1 && obj.confirm === 1) {
-                getRequest('/friend/list?username=' + state.currentUser.username).then(friendList => {
+                getRequest('/friend/list?username=' + state.currentLogin.username).then(friendList => {
                     if (friendList) {
                         state.friendList = friendList;
                     }
@@ -77,7 +103,7 @@ const store = new Vuex.Store({
         addNoticeGroup(state, notice) {
             let obj = JSON.parse(notice);
             if (obj.verified === 1 && obj.confirm === 1) {
-                getRequest('/group/list?username=' + state.currentUser.username).then(groupList => {
+                getRequest('/group/list?username=' + state.currentLogin.username).then(groupList => {
                     if (groupList) {
                         state.groupList = groupList;
                     }
@@ -110,7 +136,7 @@ const store = new Vuex.Store({
         },
         // 设置当前登录用户
         INIT_CURRENTUSER(state, data) {
-            state.currentUser = data;
+            state.currentLogin = data;
             window.sessionStorage.setItem('login-user', JSON.stringify(data));
             console.log("初始化登录信息完成")
         },
@@ -118,7 +144,7 @@ const store = new Vuex.Store({
         INIT_HISTORY_MSG(state, data) {
             if (data) {
                 for (var i = 0; i < data.length; i++) {
-                    let loginUsername = this.state.currentUser.username;
+                    let loginUsername = this.state.currentLogin.username;
                     let msg = data[i];
                     let key;
                     if (loginUsername === msg.receiveUsername) {
@@ -238,7 +264,7 @@ const store = new Vuex.Store({
                 // 通知订阅
                 context.state.stomp.subscribe('/user/queue/chat', msg => {
                     let receiveMsg = JSON.parse(msg.body);
-                    if (context.state.currentSession === null || context.state.currentSession.username !== receiveMsg.sendUsername) {
+                    if (context.state.currentUser === null || context.state.currentUser.username !== receiveMsg.sendUsername) {
                         if (receiveMsg.messageContentType === 'img') {
                             Notification.info({
                                 title: '【' + receiveMsg.sendNickname + '】给你发来一个图片',
@@ -282,22 +308,22 @@ const store = new Vuex.Store({
                     user = loginInfo;
                     context.commit('INIT_CURRENTUSER', loginInfo)
                 }).then(() => {
-                    getRequest('/friend/list?username=' + context.state.currentUser.username).then(friendList => {
+                    getRequest('/friend/list?username=' + context.state.currentLogin.username).then(friendList => {
                         context.commit('INIT_FRIEND_LIST', friendList)
                     })
-                    getRequest('/group/list?username=' + context.state.currentUser.username).then(groupList => {
+                    getRequest('/group/list?username=' + context.state.currentLogin.username).then(groupList => {
                         context.commit('INIT_GROUP_LIST', groupList)
                     }).then(() => {
-                        getRequest('/message/history/username?username=' + context.state.currentUser.username).then(msgList => {
+                        getRequest('/message/history/username?username=' + context.state.currentLogin.username).then(msgList => {
                             context.commit('INIT_HISTORY_MSG', msgList)
                         })
-                        getRequest('/notice-server/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                        getRequest('/notice-server/history/username?username=' + context.state.currentLogin.username).then(noticeList => {
                             context.commit('INIT_NOTICE_SERVER', noticeList)
                         })
-                        getRequest('/notice-friend/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                        getRequest('/notice-friend/history/username?username=' + context.state.currentLogin.username).then(noticeList => {
                             context.commit('INIT_NOTICE_FRIEND', noticeList)
                         })
-                        getRequest('/notice-group/history/username?username=' + context.state.currentUser.username).then(noticeList => {
+                        getRequest('/notice-group/history/username?username=' + context.state.currentLogin.username).then(noticeList => {
                             context.commit('INIT_NOTICE_GROUP', noticeList)
                         })
                     })
