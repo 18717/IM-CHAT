@@ -112,4 +112,17 @@ public class MessageTotalServiceImpl extends ServiceImpl<MessageTotalMapper, Mes
         return msgList;
     }
 
+    /**
+     * 删除有关的聊天记录
+     *
+     * @param sender
+     * @param receiver
+     */
+    @Override
+    public void deleteMsgByKey(String sender, String receiver) {
+        String senderTo = sender + '@' + receiver;
+        String receiverTo = receiver + '@' + sender;
+        msgMapper.delete(new QueryWrapper<MessageTotal>().eq("mkey", senderTo));
+        msgMapper.delete(new QueryWrapper<MessageTotal>().eq("mkey", receiverTo));
+    }
 }

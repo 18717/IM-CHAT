@@ -31,7 +31,6 @@
         SELECT *
         FROM notice_friend
         WHERE receive_username = #{username}
-          AND is_del != 1
     </select>
 
     <!-- 更新好友通知 -->

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.li2n.im_server.pojo.UserFriendList;
 import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.pojo.model.FriendModel;
-import com.li2n.im_server.pojo.model.RespBeanModel;
 
 import java.security.Principal;
 import java.util.List;
@@ -39,5 +38,5 @@ public interface IUserFriendListService extends IService<UserFriendList> {
      * @param username
      * @return
      */
-    RespBeanModel delFriend(Principal principal, String username);
+    Integer delFriend(Principal principal, String username);
 }

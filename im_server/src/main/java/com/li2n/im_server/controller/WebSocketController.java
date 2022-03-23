@@ -48,6 +48,8 @@ public class WebSocketController {
     @Autowired
     private IMessageOfflineService iMessageOfflineService;
     @Autowired
+    private IMessageTotalService messageTotalService;
+    @Autowired
     private INoticeFriendService noticeFriendService;
     @Autowired
     private INoticeServerService noticeServerService;
@@ -156,7 +158,7 @@ public class WebSocketController {
             noticeFriend.setOnline(0);
         }
         // 添加/删除
-        if ("add".equals(model.getRequestType())) {
+        if (model.isAdd()) {
             noticeFriend.setContent(model.getComment());
             noticeFriend.setAdd(1);
             noticeFriend.setDel(0);
@@ -187,10 +189,13 @@ public class WebSocketController {
                 noticeFriend.setTitle(model.getContent());
                 noticeFriend.setVerified(0);
             }
-        } else if ("del".equals(model.getRequestType())) {
+        } else if (model.isDel()) {
             noticeFriend.setAdd(0);
             noticeFriend.setDel(1);
             noticeFriend.setVerified(1);
+            noticeFriend.setConfirm(1);
+            noticeFriend.setFlag(1);
+            messageTotalService.deleteMsgByKey(noticeFriend.getSendUsername(), noticeFriend.getReceiveUsername());
             noticeFriend.setTitle(model.getContent());
         }
         noticeFriendService.addNoticeRecord(noticeFriend);

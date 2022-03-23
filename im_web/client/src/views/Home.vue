@@ -195,6 +195,7 @@ import Message from "@/components/chat/Message";
 import TextInput from "@/components/chat/TextInput";
 import Friend from "@/components/chat/Friend";
 import {mapState} from "vuex";
+import {postRequest} from "@/api/api";
 
 export default {
   name: "Home",
@@ -220,7 +221,36 @@ export default {
   methods: {
 
     delFriend(user) {
-      alert("删除好友" + user.nickname)
+      let th = this
+      let message = '确定和好友 ' + user.nickname + ' 解除好友关系，是否继续？';
+      this.$confirm(message, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$store.commit('delFriend')
+        this.postRequest('/friend/del?username=' + user.username)
+            .then(resp => {
+              let friendNotice = {};
+              friendNotice.avatarUrl = this.currentLogin.avatar;
+              friendNotice.sendNickname = this.currentLogin.nickname;
+              friendNotice.sendUsername = this.currentLogin.username;
+              friendNotice.receiveUsername = user.username;
+              friendNotice.content = "解除好友关系";
+              friendNotice.businessType = 'del';
+              friendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+              this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendNotice));
+              this.getRequest('/friend/list?username=' + this.currentLogin.username).then(friendList => {
+                this.$store.commit('INIT_FRIEND_LIST', friendList)
+              })
+            })
+            .catch({});
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消操作'
+        });
+      });
     },
 
     quitGroup(group) {

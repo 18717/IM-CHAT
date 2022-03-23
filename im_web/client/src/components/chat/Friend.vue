@@ -154,7 +154,7 @@ export default {
         friendParams.content = "好友申请";
         friendParams.comment = value;
         friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-        friendParams.requestType = 'add';
+        friendParams.businessType = 'add';
         this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
         this.$message({
           type: 'success',

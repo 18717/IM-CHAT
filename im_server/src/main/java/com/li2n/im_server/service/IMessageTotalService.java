@@ -51,4 +51,11 @@ public interface IMessageTotalService extends IService<MessageTotal> {
      */
     List<MessageModel> selectByUsername(String username);
 
+    /**
+     * 删除有关的聊天记录
+     * @param sender
+     * @param receiver
+     */
+    void deleteMsgByKey(String sender, String receiver);
+
 }

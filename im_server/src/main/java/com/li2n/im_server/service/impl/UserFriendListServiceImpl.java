@@ -112,10 +112,12 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
      *
      * @param principal
      * @param username
-     * @return
+     * @return 0 成功解除关系
+     *         1 对方不是你的好友
+     *        -1 你不是对方好友
      */
     @Override
-    public RespBeanModel delFriend(Principal principal, String username) {
+    public Integer delFriend(Principal principal, String username) {
         String senderUsername = principal.getName();
         String s1 = "," + senderUsername;
         String s2 = "," + username;
@@ -126,10 +128,10 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
         int index2 = sb2.indexOf(s1);
 
         if (index1 == -1) {
-            return RespBeanModel.error("对方不是你的好友，操作失败！");
+            return 1;
         }
         if (index2 == -1) {
-            return RespBeanModel.error("你不是对方的好友，操作失败！");
+            return -1;
         }
 
         sb1.delete(index1, index1 + username.length() + 1);
@@ -140,7 +142,7 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
         friendMapper.updateFriendsByUsername(senderUsername, String.valueOf(sb1), LocalDateTime.now());
         friendMapper.updateFriendsByUsername(username, String.valueOf(sb2), LocalDateTime.now());
 
-        return RespBeanModel.success("解除好友关系成功！");
+        return 0;
     }
 
     /**

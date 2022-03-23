@@ -7,7 +7,7 @@
 
     <!-- 功能列 -->
     <el-main class="chat-set-main scrollbar">
-      <el-collapse>
+      <el-collapse accordion>
         <el-collapse-item>
           <template slot="title">
             <i class="el-icon-edit-outline"></i> <span>服务器通知</span>
@@ -28,7 +28,7 @@
           <ul style="margin: 0; padding: 0">
             <li v-for="notice in noticeList['friend']" @click="showFriendNotice(notice)">
 
-              <el-col :span="18"><b>{{ notice.sendNickname }}</b> {{ notice.title.substr(0, 5) }}</el-col>
+              <el-col :span="18"><b>{{ notice.sendNickname }}</b> {{ notice.title.substr(0, 6) }}</el-col>
               <el-col :span="6" style="text-align: right; padding-right: 10px">
                 <el-tag size="small">{{ notice.sendTime.substr(5, 5) }}</el-tag>
               </el-col>
@@ -146,7 +146,7 @@
         width="30%">
       <span slot="title">{{ noticeFriend.title }}</span>
 
-      <el-card class="friend-notice">
+      <el-card v-if="noticeFriend.add === 1" class="friend-notice">
 
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
@@ -170,6 +170,28 @@
           </el-col>
           <el-col :span="18">{{ noticeFriend.sendTime }}</el-col>
         </el-row>
+      </el-card>
+
+      <el-card v-else-if="noticeFriend.del === 1" class="friend-notice">
+        <el-row>
+          <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
+                                 :src="noticeFriend.avatarUrl" alt=""></el-col>
+          <el-col :span="20">
+            <b>{{ noticeFriend.sendNickname }}</b> 已和您解除好友关系
+          </el-col>
+        </el-row>
+        <el-divider/>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">解除日期</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeFriend.sendTime }}</el-col>
+        </el-row>
+      </el-card>
+
+      <el-card v-else class="friend-notice">
+        异常错误，请联系管理员
+        <el-divider/>
       </el-card>
     </el-dialog>
 
@@ -363,7 +385,7 @@ export default {
         this.resultFriendNotice.receiveUsername = notice.sendUsername;
         this.resultFriendNotice.avatarUrl = user.avatar;
         this.resultFriendNotice.flagTime = notice.flagTime;
-        this.resultFriendNotice.requestType = 'add';
+        this.resultFriendNotice.businessType = 'add';
       } else if (notice.del === 1) {
 
       }

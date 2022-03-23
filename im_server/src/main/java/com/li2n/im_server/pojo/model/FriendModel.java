@@ -32,7 +32,7 @@ public class FriendModel {
     @ApiModelProperty(value = "请求备注", required = true)
     private String comment;
     @ApiModelProperty(value = "del/add", required = true)
-    private String requestType;
+    private String businessType;
     @ApiModelProperty(value = "true/false", required = true)
     private Boolean result;
     @ApiModelProperty(value = "请求时间", required = true)
@@ -41,5 +41,8 @@ public class FriendModel {
     private int flag;
     @ApiModelProperty(value = "标记时间", required = true)
     private String flagTime;
+
+    public Boolean isAdd() { return "add".equals(this.businessType); }
+    public Boolean isDel() { return "del".equals(this.businessType); }
 
 }

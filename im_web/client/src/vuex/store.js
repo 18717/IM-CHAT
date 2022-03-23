@@ -87,6 +87,10 @@ const store = new Vuex.Store({
         addNoticeFriend(state, notice) {
             let obj = JSON.parse(notice);
             if (obj.verified === 1 && obj.confirm === 1) {
+                if (obj.del === 1) {
+                    state.currentUser = null;
+                    state.showInfo = false;
+                }
                 getRequest('/friend/list?username=' + state.currentLogin.username).then(friendList => {
                     if (friendList) {
                         state.friendList = friendList;
@@ -115,6 +119,14 @@ const store = new Vuex.Store({
                 Vue.set(state.noticeList, key, []);
             }
             state.noticeList[key].push(obj);
+        },
+        // 解除好友关系时执行
+        delFriend(state) {
+            state.showInfo = false;
+            state.currentUser = null;
+            getRequest('/message/history/username?username=' + state.currentLogin.username).then(msgList => {
+                state.commit('INIT_HISTORY_MSG', msgList)
+            })
         },
         // 初始化好友列表
         INIT_FRIEND_LIST(state, data) {

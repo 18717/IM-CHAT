@@ -48,8 +48,17 @@ public class UserFriendListController {
 
     @ApiOperation(value = "解除好友关系")
     @PostMapping("/del")
-    public void friendDel(Principal principal, String username) {
-        friendService.delFriend(principal, username);
+    public RespBeanModel friendDel(Principal principal, String username) {
+        Integer flag = friendService.delFriend(principal, username);
+        if (flag == 0) {
+            return RespBeanModel.success("解除好友关系成功");
+        } else if (flag == 1) {
+            return RespBeanModel.error("非法请求，对方不是你的好友");
+        } else if (flag == -1) {
+            return RespBeanModel.error("非法请求，你不是对方的好友");
+        } else {
+            return RespBeanModel.error("非法请求");
+        }
     }
 
     @ApiOperation(value = "获取用户好友列表")
