@@ -6,7 +6,6 @@
     <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.MessageTotal">
         <id column="id" property="id"/>
         <result column="mkey" property="mkey"/>
-        <result column="send_nickname" property="sendNickname"/>
         <result column="send_username" property="sendUsername"/>
         <result column="receive_username" property="receiveUsername"/>
         <result column="message_content_type" property="messageContentType"/>
@@ -17,9 +16,18 @@
         <result column="is_self" property="self"/>
     </resultMap>
 
+    <resultMap id="UserWithMsgTotalResultMap" type="com.li2n.im_server.pojo.MessageTotal" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="userInfo" ofType="com.li2n.im_server.pojo.UserInfo">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+        </collection>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, mkey, send_nickname, send_username, receive_username, message_content_type, content, file_url, send_time, is_online, is_self
+        id, mkey, send_username, receive_username, message_content_type, content, file_url, send_time, is_online, is_self
     </sql>
 
     <!-- 根据msgKey查询指定聊天记录 -->
@@ -39,12 +47,20 @@
     </select>
 
     <!-- 查询有关用户所有的消息记录 -->
-    <select id="selectByUsername" resultMap="BaseResultMap">
-        SELECT *
-        FROM message_total msg
-        WHERE msg.send_username = #{username}
-           OR msg.receive_username = #{username}
-        ORDER BY id ASC
+    <select id="selectByUsername" resultMap="UserWithMsgTotalResultMap">
+        SELECT
+            message_total.*,
+            user_info.avatar,
+            user_info.nickname,
+            user_info.gender
+        FROM
+            message_total,
+            user_info
+        WHERE
+            ( message_total.send_username = #{username} AND user_info.username = message_total.receive_username )
+           OR ( message_total.receive_username = #{username} AND user_info.username = message_total.send_username )
+        ORDER BY
+            message_total.send_time
     </select>
 
 </mapper>

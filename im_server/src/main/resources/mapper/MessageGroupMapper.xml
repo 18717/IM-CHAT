@@ -6,7 +6,7 @@
     <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.MessageGroup">
         <id column="id" property="id" />
         <result column="gid" property="gid" />
-        <result column="send_username" property="sendUsername" />
+        <result column="sender_username" property="senderUsername" />
         <result column="message_content_type" property="messageContentType" />
         <result column="content" property="content" />
         <result column="file_url" property="fileUrl" />
@@ -14,9 +14,34 @@
         <result column="is_self" property="self" />
     </resultMap>
 
+    <resultMap id="UserWithMsgGroupResultMap" type="com.li2n.im_server.pojo.MessageGroup" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="userInfo" ofType="com.li2n.im_server.pojo.UserInfo">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+        </collection>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, gid, send_username, message_content_type, content, file_url, send_time, is_self
+        id, gid, avatar, sender_username, message_content_type, content, file_url, send_time, is_self
     </sql>
+
+    <select id="msgListByGid" resultMap="UserWithMsgGroupResultMap">
+        SELECT
+            message_group.*,
+            user_info.avatar,
+            user_info.nickname,
+            user_info.gender
+        FROM
+            message_group,
+            user_info
+        WHERE
+            message_group.gid = #{gid}
+          AND user_info.username = message_group.sender_username
+        ORDER BY
+            message_group.send_time
+    </select>
 
 </mapper>

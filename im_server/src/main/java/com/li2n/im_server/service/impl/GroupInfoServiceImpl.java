@@ -141,7 +141,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     @Override
     public RespBeanModel joinGroup(GroupModel model) {
 
-        String oldGroupMembers = getGroupByGid(model.getGid()).getMembers();
+        String oldGroupMembers = groupInfoByGid(model.getGid()).getMembers();
         String[] memberArr = oldGroupMembers.split(",");
         for (String str : memberArr) {
             if (str.equals(model.getReceiverUsername())) {
@@ -225,7 +225,8 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @param gid
      * @return
      */
-    private GroupInfo getGroupByGid(String gid) {
+    @Override
+    public GroupInfo groupInfoByGid(String gid) {
         return groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid));
     }
 
@@ -246,7 +247,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @return
      */
     private int getGroupMemberNum(String gid) {
-        return getGroupByGid(gid).getMembers().split(",").length;
+        return groupInfoByGid(gid).getMembers().split(",").length;
     }
 
 
@@ -256,8 +257,9 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @param gid
      * @return
      */
-    private List<String> getGroupMembers(String gid) {
-        String members = getGroupByGid(gid).getMembers();
+    @Override
+    public List<String> getGroupMembers(String gid) {
+        String members = groupInfoByGid(gid).getMembers();
         int index = members.indexOf(",");
 
         if (members.length() < index + 1) {

@@ -18,23 +18,42 @@
       <div class="message-info scrollbar" v-scroll-bottom="msgList">
         <ul v-if="currentUser">
           <li v-for="msg in msgList[currentLogin.username + '#' + currentUser.username]">
-            <p class="time">
-              <span>{{ msg.sendTime }}</span>
+            <p class="time" style="text-align: center;margin: 15px 0">
+              <span style="background-color: #dcdcdc;">{{ msg.sendTime }}</span>
             </p>
 
-            <div class="main" :class="{self:msg.self === '1'}">
-              <img class="avatar" :src="msg.self === '1' ? currentLogin.avatar : currentUser.avatar" alt="">
-              <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
-                   style="width: 100px; height: 100px; border-radius: 3px">
-              <p v-else class="text">
-                <span>{{ msg.content }}</span>
-                <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
-                  <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
-                  </el-button>
-                </a>
-              </p>
+            <div v-if="msg.self !== 1" class="main no-self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
             </div>
-
+            <div v-else class="main self">
+              <div style="height: 50%">
+                <img class="avatar" :src="currentLogin.avatar" alt="">
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <div>{{ msg.content }}</div>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
           </li>
         </ul>
       </div>
@@ -54,6 +73,56 @@
           </div>
         </div>
       </div>
+      <div class="message-info scrollbar" v-scroll-bottom="groupMsgList">
+        <ul v-if="currentGroup">
+          <li v-for="msg in groupMsgList[currentGroup.gid]">
+            <div v-if="msg.self !== 1" class="main no-self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
+                  <span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                </p>
+                <p v-else class="time">
+                  <span class="master-tag">群主</span><span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                </p>
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div v-else class="main self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
+                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span>
+                </p>
+                <p v-else class="time">
+                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span> <span class="master-tag">群主</span>
+                </p>
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
 
   </div>
@@ -72,6 +141,7 @@ export default {
   computed: mapState([
     'currentLogin',
     'msgList',
+    'groupMsgList',
     'currentUser',
     'currentGroup',
     'chatType',
@@ -176,16 +246,25 @@ export default {
 }
 
 .message-info .time {
-  text-align: center;
+  /*text-align: right;*/
   margin: 7px 0;
+}
+
+.message-info .time .master-tag {
+  background-color: #fff;
+  height: auto;
+  padding: 0 5px;
+  font-size: 12px;
+  color: #409EFF;
+  border: 1px solid #d9ecff;
+  border-radius: 4px;
 }
 
 .message-info .time span {
   display: inline-block;
-  padding: 0 18px;
-  font-size: 12px;
-  color: #FFF;
-  background-color: #dcdcdc;
+  padding: 0 5px;
+  font-size: 13px;
+  color: #8c939d;
   border-radius: 2px;
 }
 
@@ -208,6 +287,10 @@ export default {
   border-radius: 4px;
   line-height: 30px;
   background-color: #fff;
+}
+
+.message-info .no-self {
+  text-align: left;
 }
 
 .message-info .self {

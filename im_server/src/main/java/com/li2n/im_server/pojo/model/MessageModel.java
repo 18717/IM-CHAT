@@ -18,14 +18,23 @@ import lombok.experimental.Accessors;
 @ApiModel(value = "MessageModel", description = "消息数据模型")
 public class MessageModel {
 
-    @ApiModelProperty(value = "发送者用户名")
+    @ApiModelProperty(value = "昵称")
     private String sendNickname;
+
+    @ApiModelProperty(value = "用户头像")
+    private String avatar;
 
     @ApiModelProperty(value = "发送者用户名")
     private String sendUsername;
 
     @ApiModelProperty(value = "接收者用户名")
     private String receiveUsername;
+
+    @ApiModelProperty(value = "群聊唯一识别码")
+    private String gid;
+
+    @ApiModelProperty(value = "群主")
+    private String groupMaster;
 
     @ApiModelProperty(value = "标题")
     private String title;
@@ -40,9 +49,9 @@ public class MessageModel {
     private String fileUrl;
 
     @ApiModelProperty(value = "发送时间")
-    private String sendTime;
+    private String sendTimeStr;
 
     @ApiModelProperty(value = "该消息是否是发送出去的")
-    private String self;
+    private Integer self;
 
 }

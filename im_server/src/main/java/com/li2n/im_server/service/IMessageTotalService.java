@@ -2,7 +2,6 @@ package com.li2n.im_server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.li2n.im_server.pojo.MessageTotal;
-import com.li2n.im_server.pojo.model.MessageModel;
 
 import java.util.List;
 
@@ -49,7 +48,7 @@ public interface IMessageTotalService extends IService<MessageTotal> {
      * @param username
      * @return
      */
-    List<MessageModel> selectByUsername(String username);
+    List<MessageTotal> selectByUsername(String username);
 
     /**
      * 删除有关的聊天记录

@@ -32,10 +32,6 @@ public class MessageTotal implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "发送者用昵称")
-    @TableField("send_nickname")
-    private String sendNickname;
-
     @ApiModelProperty(value = "消息记录标识")
     @TableField("mkey")
     private String mkey;
@@ -71,5 +67,11 @@ public class MessageTotal implements Serializable {
     @ApiModelProperty(value = "该消息是否是发送出去的")
     @TableField("is_self")
     private int self;
+
+    @TableField(exist = false)
+    private UserInfo userInfo;
+
+    @TableField(exist = false)
+    private String sendTimeStr;
 
 }

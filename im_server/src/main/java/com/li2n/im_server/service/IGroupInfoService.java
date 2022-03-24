@@ -43,6 +43,13 @@ public interface IGroupInfoService extends IService<GroupInfo> {
      */
     RespBeanModel joinGroup(GroupModel model);
 
+    /**
+     * 根据Gid获取群聊信息
+     * @param gid
+     * @return
+     */
+    GroupInfo groupInfoByGid(String gid);
+
 
     /**
      * 获取用户的群列表
@@ -50,5 +57,12 @@ public interface IGroupInfoService extends IService<GroupInfo> {
      * @return
      */
     List<GroupInfo> selectGroupList(String username);
+
+    /**
+     * 根据Gid获取群成员用户名
+     * @param gid
+     * @return
+     */
+    List<String> getGroupMembers(String gid);
 
 }

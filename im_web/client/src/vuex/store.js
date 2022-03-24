@@ -13,6 +13,8 @@ const store = new Vuex.Store({
     state: {
         // 消息列表
         msgList: {},
+        // 群消息列表
+        groupMsgList: {},
         // 通知列表
         noticeList: {},
         // 好友列表
@@ -68,12 +70,30 @@ const store = new Vuex.Store({
                 Vue.set(state.msgList, key, []);
             }
             state.msgList[key].push({
+                avatar:msg.avatar,
                 sendUsername: msg.sendUsername,
                 receiveUsername: msg.receiveUsername,
                 content: msg.content,
                 messageContentType: msg.messageContentType,
                 fileUrl: msg.fileUrl,
-                sendTime: msg.sendTime,
+                sendTime: msg.sendTimeStr,
+                self: msg.self,
+            })
+        },
+        addGroupMessage(state, msg) {
+            let key = msg.gid;
+            let msgArr = state.groupMsgList[key];
+            if (!msgArr) {
+                Vue.set(state.groupMsgList, key, []);
+            }
+            state.groupMsgList[key].push({
+                avatar: msg.avatar,
+                sendUsername: msg.sendUsername,
+                sendNickname: msg.sendNickname,
+                messageContentType: msg.messageContentType,
+                content: msg.content,
+                fileUrl: msg.fileUrl,
+                sendTime: msg.sendTimeStr,
                 self: msg.self,
             })
         },
@@ -171,17 +191,42 @@ const store = new Vuex.Store({
 
                     // 添加消息
                     state.msgList[key].push({
+                        avatar:msg.userInfo.avatar,
                         sendUsername: msg.sendUsername,
                         receiveUsername: msg.receiveUsername,
                         content: msg.content,
                         messageContentType: msg.messageContentType,
                         fileUrl: msg.fileUrl,
-                        sendTime: msg.sendTime,
+                        sendTime: msg.sendTimeStr,
                         self: msg.self,
                     })
                 }
             }
             console.log("初始化历史消息记录完成")
+        },
+        INIT_HISTORY_GROUP_MSG(state, data) {
+            if (data) {
+                for (var key in data) {
+                    if (!state.groupMsgList[key]) {
+                        Vue.set(state.groupMsgList, key, []);
+                    }
+                    let msgList = data[key];
+                    for (var i = 0; i < msgList.length; i++) {
+                        // 添加消息
+                        state.groupMsgList[key].push({
+                            avatar: msgList[i].userInfo.avatar,
+                            sendNickname: msgList[i].userInfo.nickname,
+                            sendUsername: msgList[i].senderUsername,
+                            messageContentType: msgList[i].messageContentType,
+                            content: msgList[i].content,
+                            fileUrl: msgList[i].fileUrl,
+                            sendTime: msgList[i].sendTimeStr,
+                            self: msgList[i].self,
+                        })
+                    }
+                }
+            }
+            console.log("初始化群消息完成")
         },
         INIT_NOTICE_SERVER(state, data) {
             if (data) {
@@ -302,6 +347,14 @@ const store = new Vuex.Store({
                     receiveMsg.receiveUsername = receiveMsg.sendUsername;
                     context.commit('addMessage', receiveMsg);
                 });
+                context.state.stomp.subscribe('/user/queue/group/chat', msg => {
+                    let receiveMsg = JSON.parse(msg.body);
+                    if (context.state.currentGroup === null || context.state.currentGroup.gid !== receiveMsg.gid) {
+                        Vue.set(context.state.isDot, receiveMsg.gid, true);
+                    }
+                    receiveMsg.self = 0;
+                    context.commit('addGroupMessage', receiveMsg);
+                });
                 context.state.stomp.subscribe('/topic/chat', notice => {
                     context.commit('addNoticeServer', notice.body);
                 });
@@ -328,6 +381,9 @@ const store = new Vuex.Store({
                     }).then(() => {
                         getRequest('/message/history/username?username=' + context.state.currentLogin.username).then(msgList => {
                             context.commit('INIT_HISTORY_MSG', msgList)
+                        })
+                        getRequest('/message-group/history/username?username=' + context.state.currentLogin.username).then(msgList => {
+                            context.commit('INIT_HISTORY_GROUP_MSG', msgList)
                         })
                         getRequest('/notice-server/history/username?username=' + context.state.currentLogin.username).then(noticeList => {
                             context.commit('INIT_NOTICE_SERVER', noticeList)

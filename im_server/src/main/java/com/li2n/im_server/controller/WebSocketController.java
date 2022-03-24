@@ -59,23 +59,23 @@ public class WebSocketController {
     private IGroupInfoService groupInfoService;
     @Autowired
     private INoticeGroupService noticeGroupService;
+    @Autowired
+    private IMessageGroupService messageGroupService;
 
     @MessageMapping("/ws/client/chat")
     public void handleMsg(Authentication authentication, MessageModel model) {
         UserInfo user = (UserInfo) authentication.getPrincipal();
         String msgKey = user.getUsername() + "@" + model.getReceiveUsername();
-
         MessageTotal msg = new MessageTotal();
 
         msg.setMkey(msgKey);
-        msg.setSendNickname(user.getNickname());
         msg.setSendUsername(user.getUsername());
         msg.setReceiveUsername(model.getReceiveUsername());
         msg.setMessageContentType(model.getMessageContentType());
         msg.setContent(model.getContent());
         msg.setFileUrl(model.getFileUrl());
-        msg.setSendTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
-        msg.setSelf(Integer.parseInt(model.getSelf()));
+        msg.setSendTime(TimeFormat.stringToLocalDateTime(model.getSendTimeStr()));
+        msg.setSelf(model.getSelf());
 
         model.setSendNickname(user.getNickname());
         model.setSendUsername(user.getUsername());
@@ -89,6 +89,28 @@ public class WebSocketController {
             iMessageOfflineService.insertMsg(msg);
         }
         msgService.insertMsg(msg);
+    }
+
+    @MessageMapping("/ws/group/chat")
+    public void groupChat(MessageModel model) {
+        MessageGroup msg = new MessageGroup();
+        msg.setGid(model.getGid());
+        msg.setSenderUsername(model.getSendUsername());
+        msg.setMessageContentType(model.getMessageContentType());
+        msg.setContent(model.getContent());
+        msg.setFileUrl(model.getFileUrl());
+        msg.setSendTime(TimeFormat.stringToLocalDateTime(model.getSendTimeStr()));
+        msg.setSelf(null);
+        messageGroupService.insertMsg(msg);
+
+        List<String> groupMembers = groupInfoService.getGroupMembers(model.getGid());
+        groupMembers.add(model.getGroupMaster());
+
+        for (String username : groupMembers) {
+            if (!username.equals(model.getSendUsername())) {
+                simpMessagingTemplate.convertAndSendToUser(username, "/queue/group/chat", model);
+            }
+        }
     }
 
     @MessageMapping("/ws/server/notice")
@@ -204,6 +226,11 @@ public class WebSocketController {
 
     }
 
+    /**
+     * 转发添加/退群的消息
+     *
+     * @param model
+     */
     @MessageMapping("/ws/group/send")
     public void sendGroupRequest(GroupModel model) {
         NoticeGroup noticeGroup = new NoticeGroup();
