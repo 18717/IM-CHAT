@@ -153,7 +153,7 @@ export default {
       }
     };
     return {
-      headers: {Authorization: window.sessionStorage.getItem('tokenStr')},
+      headers: {Authorization: window.sessionStorage.getItem('token')},
       loading: false,
       editInfo: false,
       editPsw: false,

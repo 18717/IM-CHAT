@@ -1,6 +1,7 @@
 package com.li2n.im_server.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -32,25 +33,38 @@ public class MessageGroup implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "群组唯一识别码")
+    @TableField("gid")
     private String gid;
 
-    @ApiModelProperty(value = "发送者用户名")
-    private String sendUsername;
+    @ApiModelProperty(value = "用户名")
+    @TableField("sender_username")
+    private String senderUsername;
 
     @ApiModelProperty(value = "内容类型")
+    @TableField("message_content_type")
     private String messageContentType;
 
     @ApiModelProperty(value = "内容")
+    @TableField("content")
     private String content;
 
     @ApiModelProperty(value = "文件URL")
+    @TableField("file_url")
     private String fileUrl;
 
     @ApiModelProperty(value = "发送时间")
+    @TableField("send_time")
     private LocalDateTime sendTime;
 
     @ApiModelProperty(value = "是否是当前登录用户发送出去的")
-    private int self;
+    @TableField("is_self")
+    private Integer self;
 
+    @TableField(exist = false)
+    private UserInfo userInfo;
+
+    @ApiModelProperty(value = "发送时间字符串")
+    @TableField(exist = false)
+    private String sendTimeStr;
 
 }

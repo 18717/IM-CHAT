@@ -7,10 +7,13 @@ import com.li2n.im_server.mapper.UserInfoMapper;
 import com.li2n.im_server.pojo.UserFriendList;
 import com.li2n.im_server.pojo.UserInfo;
 import com.li2n.im_server.pojo.model.FriendModel;
+import com.li2n.im_server.pojo.model.RespBeanModel;
 import com.li2n.im_server.service.IUserFriendListService;
+import com.li2n.im_server.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,8 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
     private UserFriendListMapper friendMapper;
     @Autowired
     private UserInfoMapper userMapper;
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 添加好友记录
@@ -72,8 +77,8 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
 
         // 判断用户的好友是否已满，两个用户需要同时满足好友未满才能添加成功
         if (sendSplit.length < FRIEND_MAX_NUM && receiverSplit.length < FRIEND_MAX_NUM) {
-            friendMapper.updateByUsername(receiverUsername, receiverFriends, LocalDateTime.now());
-            friendMapper.updateByUsername(sendUsername, sendFriends, LocalDateTime.now());
+            friendMapper.updateFriendsByUsername(receiverUsername, receiverFriends, LocalDateTime.now());
+            friendMapper.updateFriendsByUsername(sendUsername, sendFriends, LocalDateTime.now());
             return true;
         } else {
             return false;
@@ -102,6 +107,43 @@ public class UserFriendListServiceImpl extends ServiceImpl<UserFriendListMapper,
         return users;
     }
 
+    /**
+     * 解除好友关系
+     *
+     * @param principal
+     * @param username
+     * @return 0 成功解除关系
+     *         1 对方不是你的好友
+     *        -1 你不是对方好友
+     */
+    @Override
+    public Integer delFriend(Principal principal, String username) {
+        String senderUsername = principal.getName();
+        String s1 = "," + senderUsername;
+        String s2 = "," + username;
+        StringBuilder sb1 = new StringBuilder("," + friendListStr(senderUsername));
+        StringBuilder sb2 = new StringBuilder("," + friendListStr(username));
+
+        int index1 = sb1.indexOf(s2);
+        int index2 = sb2.indexOf(s1);
+
+        if (index1 == -1) {
+            return 1;
+        }
+        if (index2 == -1) {
+            return -1;
+        }
+
+        sb1.delete(index1, index1 + username.length() + 1);
+        sb1.delete(0, 1);
+        sb2.delete(index2, index2 + senderUsername.length() + 1);
+        sb2.delete(0, 1);
+
+        friendMapper.updateFriendsByUsername(senderUsername, String.valueOf(sb1), LocalDateTime.now());
+        friendMapper.updateFriendsByUsername(username, String.valueOf(sb2), LocalDateTime.now());
+
+        return 0;
+    }
 
     /**
      * 获取某个用户的好友列表字符串

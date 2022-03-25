@@ -10,6 +10,9 @@ import com.li2n.im_server.pojo.GroupInfo;
 import com.li2n.im_server.pojo.GroupList;
 import com.li2n.im_server.pojo.model.*;
 import com.li2n.im_server.service.IGroupInfoService;
+import com.li2n.im_server.service.IGroupListService;
+import com.li2n.im_server.service.IMessageGroupService;
+import com.li2n.im_server.service.INoticeGroupService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import com.li2n.im_server.utils.UID;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +59,12 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     private GroupInfoMapper groupInfoMapper;
     @Autowired
     private GroupListMapper groupListMapper;
+    @Autowired
+    private IGroupListService groupListService;
+    @Autowired
+    private IMessageGroupService messageGroupService;
+    @Autowired
+    private INoticeGroupService noticeGroupService;
 
     /**
      * 建群
@@ -141,7 +151,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
     @Override
     public RespBeanModel joinGroup(GroupModel model) {
 
-        String oldGroupMembers = getGroupByGid(model.getGid()).getMembers();
+        String oldGroupMembers = groupInfoByGid(model.getGid()).getMembers();
         String[] memberArr = oldGroupMembers.split(",");
         for (String str : memberArr) {
             if (str.equals(model.getReceiverUsername())) {
@@ -192,7 +202,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         }
         String[] gids = gidStr.split(",");
         for (String gid : gids) {
-            GroupInfo groupInfo = groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid));
+            GroupInfo groupInfo = groupInfoMapper.selectGroupInfo(gid);
             groupInfo.setMemberArr(getGroupMembers(gid));
             groups.add(groupInfo);
         }
@@ -225,8 +235,103 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @param gid
      * @return
      */
-    private GroupInfo getGroupByGid(String gid) {
+    @Override
+    public GroupInfo groupInfoByGid(String gid) {
         return groupInfoMapper.selectOne(new QueryWrapper<GroupInfo>().eq("gid", gid));
+    }
+
+    /**
+     * 退出群聊
+     *
+     * @param username
+     * @param gid
+     * @return 0 退群成功
+     * -1 非本群成员
+     */
+    @Override
+    public Integer quitGroup(String username, String gid) {
+        GroupInfo groupInfo = groupInfoByGid(gid);
+        String members = groupInfo.getMembers();
+        String str = "," + username;
+        StringBuilder sb = new StringBuilder("," + members);
+        int index = sb.indexOf(str);
+        if (index == -1) {
+            return -1;
+        }
+        sb.delete(index, index + str.length());
+        sb.delete(0, 1);
+        groupInfo.setMembers(String.valueOf(sb));
+        groupInfo.setMemberNum(groupInfo.getMemberNum() - 1);
+        groupInfo.setUpdateTime(LocalDateTime.now());
+
+        GroupList groupList = getGroupListByUsername(username);
+        String gids = groupList.getGids();
+        str = "," + gid;
+        sb = new StringBuilder("," + gids);
+        index = sb.indexOf(str);
+        if (index == -1) {
+            return -1;
+        }
+        sb.delete(index, index + str.length());
+        sb.delete(0, 1);
+        groupList.setGids(String.valueOf(sb));
+        groupList.setJoinNum(groupList.getJoinNum() - 1);
+        groupList.setTotalNum(groupList.getTotalNum() - 1);
+
+        groupInfoMapper.updateMemberList(gid, groupInfo);
+        groupListService.updateGroupList(username, groupList);
+        return 0;
+    }
+
+    /**
+     * 更新群信息
+     *
+     * @param groupInfo
+     * @return
+     */
+    @Override
+    public boolean updateGroupInfo(GroupInfo groupInfo) {
+        GroupInfo info = groupInfoByGid(groupInfo.getGid());
+        if (!info.getMasterUsername().equals(groupInfo.getMasterUsername())) {
+            return false;
+        }
+        info.setGroupName(groupInfo.getGroupName());
+        info.setGroupDescribe(groupInfo.getGroupDescribe());
+        return groupInfoMapper.update(info, new QueryWrapper<GroupInfo>().eq("gid", groupInfo.getGid())) == 1;
+    }
+
+    /**
+     * 解散群聊
+     *
+     *
+     * @param principal
+     * @param gid
+     * @return 0 解散成功
+     *         1 群聊不存在
+     *        -1 非群主请求
+     *
+     */
+    @Override
+    public Integer dismissGroup(Principal principal, String gid) {
+        String username = principal.getName();
+        GroupInfo groupInfo = groupInfoByGid(gid);
+        if (groupInfo == null) {
+            return 1;
+        }
+        if (!groupInfo.getMasterUsername().equals(username)) {
+            return -1;
+        }
+        List<String> members = getGroupMembers(gid);
+        if (!members.isEmpty()) {
+            for (String member : members) {
+                quitGroup(member, gid);
+            }
+        }
+        quitGroup(username, gid);
+        // noticeGroupService.delNoticeByGid(gid);
+        messageGroupService.delMsgByGid(gid);
+        groupInfoMapper.tombstonedByGid(gid);
+        return 0;
     }
 
     /**
@@ -246,7 +351,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @return
      */
     private int getGroupMemberNum(String gid) {
-        return getGroupByGid(gid).getMembers().split(",").length;
+        return groupInfoByGid(gid).getMembers().split(",").length;
     }
 
 
@@ -256,11 +361,12 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
      * @param gid
      * @return
      */
-    private List<String> getGroupMembers(String gid) {
-        String members = getGroupByGid(gid).getMembers();
+    @Override
+    public List<String> getGroupMembers(String gid) {
+        String members = groupInfoByGid(gid).getMembers();
         int index = members.indexOf(",");
 
-        if (members.length() < index + 1) {
+        if (members.length() < index + 2) {
             return new ArrayList<>();
         }
         return new ArrayList<>(Arrays.asList(members.substring(index + 1).split(",")));
@@ -293,6 +399,7 @@ public class GroupInfoServiceImpl extends ServiceImpl<GroupInfoMapper, GroupInfo
         } else {
             gids.append(gid);
         }
+        // TODO 需要修改为加群、建群时更新用户群列表信息
         groupList.setGids(gids.toString());
         groupList.setFoundNum(foundNum);
         groupList.setJoinNum(joinNum);

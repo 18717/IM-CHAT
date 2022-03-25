@@ -37,4 +37,16 @@ public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
      */
     void updateMemberList(@Param("gid") String gid, @Param("groupInfo") GroupInfo groupInfo);
 
+    /**
+     * 逻辑删除（解散群聊）
+     * @param gid
+     */
+    void tombstonedByGid(@Param("gid") String gid);
+
+    /**
+     * 查询群聊信息
+     * @param gid
+     * @return
+     */
+    GroupInfo selectGroupInfo(@Param("gid") String gid);
 }

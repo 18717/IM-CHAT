@@ -34,6 +34,8 @@ public class GroupModel {
     private String receiverUsername;
     @ApiModelProperty(value = "群名", required = true)
     private String groupName;
+    @ApiModelProperty(value = "群成员", required = true)
+    private String members;
     @ApiModelProperty(value = "群组唯一识别码", required = true)
     private String gid;
     @ApiModelProperty(value = "内容标题", required = true)
@@ -59,5 +61,6 @@ public class GroupModel {
     public boolean isJoin() { return "join".equals(this.businessType); }
     public boolean isQuit() { return "quit".equals(this.businessType); }
     public boolean isForceQuit() { return "forceQuit".equals(this.businessType); }
+    public boolean isDismiss() { return "dismiss".equals(this.businessType); }
 
 }

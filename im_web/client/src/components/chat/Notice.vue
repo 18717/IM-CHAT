@@ -7,7 +7,7 @@
 
     <!-- 功能列 -->
     <el-main class="chat-set-main scrollbar">
-      <el-collapse>
+      <el-collapse accordion>
         <el-collapse-item>
           <template slot="title">
             <i class="el-icon-edit-outline"></i> <span>服务器通知</span>
@@ -28,7 +28,7 @@
           <ul style="margin: 0; padding: 0">
             <li v-for="notice in noticeList['friend']" @click="showFriendNotice(notice)">
 
-              <el-col :span="18"><b>{{ notice.sendNickname }}</b> {{ notice.title.substr(0, 5) }}</el-col>
+              <el-col :span="18"><b>{{ notice.sendNickname }}</b> {{ notice.title.substr(0, 6) }}</el-col>
               <el-col :span="6" style="text-align: right; padding-right: 10px">
                 <el-tag size="small">{{ notice.sendTime.substr(5, 5) }}</el-tag>
               </el-col>
@@ -66,8 +66,6 @@
           :visible.sync="dialogRefuseFriend"
           append-to-body
           width="30%">
-
-
         <el-card class="friend-notice">
           <el-row>
             拒绝 <b>{{ noticeFriend.sendNickname }}</b> 的好友请求
@@ -89,7 +87,6 @@
             </el-col>
           </el-row>
         </el-card>
-
         <span slot="footer">
         <el-row type="flex" justify="center" :gutter="20">
           <el-button type="danger" plain @click="refuseFriend()" style="border: 0; width: 100%">确定拒绝</el-button>
@@ -146,7 +143,7 @@
         width="30%">
       <span slot="title">{{ noticeFriend.title }}</span>
 
-      <el-card class="friend-notice">
+      <el-card v-if="noticeFriend.add === 1 || noticeFriend.add === true" class="friend-notice">
 
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
@@ -170,6 +167,28 @@
           </el-col>
           <el-col :span="18">{{ noticeFriend.sendTime }}</el-col>
         </el-row>
+      </el-card>
+
+      <el-card v-else-if="noticeFriend.del === 1 || noticeFriend.del === true" class="friend-notice">
+        <el-row>
+          <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
+                                 :src="noticeFriend.avatarUrl" alt=""></el-col>
+          <el-col :span="20">
+            <b>{{ noticeFriend.sendNickname }}</b> 已和您解除好友关系
+          </el-col>
+        </el-row>
+        <el-divider/>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">解除日期</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeFriend.sendTime }}</el-col>
+        </el-row>
+      </el-card>
+
+      <el-card v-else class="friend-notice">
+        异常错误，请联系管理员
+        <el-divider/>
       </el-card>
     </el-dialog>
 
@@ -276,8 +295,7 @@
         width="30%">
       <span slot="title">{{ noticeGroup.title }}</span>
 
-      <el-card>
-
+      <el-card v-if="noticeGroup.join === 1 || noticeGroup.join === true">
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
                                  :src="noticeGroup.avatarUrl" alt=""></el-col>
@@ -308,6 +326,75 @@
           <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
         </el-row>
       </el-card>
+
+      <el-card v-else-if="noticeGroup.quit === 1 || noticeGroup.quit === true">
+        <el-row>
+          <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
+                                 :src="noticeGroup.avatarUrl" alt=""></el-col>
+          <el-col :span="20">
+            <span>用户&nbsp;</span>
+            <b>{{ noticeGroup.senderNickname }}</b>
+            <span>&nbsp;已退出群聊</span>
+          </el-col>
+        </el-row>
+        <el-divider/>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">群名</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeGroup.groupName }}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">日期</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+        </el-row>
+      </el-card>
+
+      <el-card v-else-if="noticeGroup.forceQuit === 1 || noticeGroup.forceQuit === true">
+        <el-row>
+          <el-col :span="20">
+            <span>非常抱歉，您已被移出群聊&nbsp; <b>{{ noticeGroup.groupName }}</b> </span>
+          </el-col>
+        </el-row>
+        <el-divider/>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">原因</el-tag>
+          </el-col>
+          <el-col :span="18" v-if="noticeGroup.content != null">{{ noticeGroup.content }}</el-col>
+          <el-col :span="18" v-else style="color: #8c939d">( 空 )</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">日期</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+        </el-row>
+      </el-card>
+
+      <el-card v-else>
+        <el-row>
+          <el-col :span="20">
+            <span>群聊&nbsp;<b>{{ noticeGroup.groupName }}</b>&nbsp;已被群主解散，大家好聚好散</span>
+          </el-col>
+        </el-row>
+        <el-divider/>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">GID</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeGroup.gid }}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-tag size="medium">日期</el-tag>
+          </el-col>
+          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+        </el-row>
+      </el-card>
+
     </el-dialog>
 
   </div>
@@ -337,7 +424,7 @@ export default {
     ...mapState({
       noticeList: 'noticeList',
       friendList: 'friendList',
-      currentUser: 'currentUser',
+      currentLogin: 'currentLogin',
     }),
   },
 
@@ -356,16 +443,14 @@ export default {
     showFriendNotice(notice) {
       this.dialogFriendNotice = true;
       this.noticeFriend = notice;
-      if (notice.add === 1) {
-        let user = this.currentUser;
+      if (notice.add === 1 || notice.add === true) {
+        let user = this.currentLogin;
         this.resultFriendNotice.sendUsername = user.username;
         this.resultFriendNotice.sendNickname = user.nickname;
         this.resultFriendNotice.receiveUsername = notice.sendUsername;
         this.resultFriendNotice.avatarUrl = user.avatar;
         this.resultFriendNotice.flagTime = notice.flagTime;
-        this.resultFriendNotice.requestType = 'add';
-      } else if (notice.del === 1) {
-
+        this.resultFriendNotice.businessType = 'add';
       }
     },
     refuseFriend() {
@@ -378,7 +463,9 @@ export default {
       resultFriendNotice.verified = 1;
       resultFriendNotice.result = false;
       resultFriendNotice.flag = 1;
-      resultFriendNotice.comment = this.text;
+      resultFriendNotice.add = 1;
+      resultFriendNotice.title = '已拒绝申请';
+      resultFriendNotice.content = this.text;
       resultFriendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(resultFriendNotice));
       this.$message.error("已拒绝 " + resultFriendNotice.receiveUsername + "的好友请求")
@@ -393,19 +480,30 @@ export default {
       resultFriendNotice.verified = 1;
       resultFriendNotice.result = true;
       resultFriendNotice.flag = 1;
+      resultFriendNotice.title = '已同意申请';
       resultFriendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(resultFriendNotice));
       this.$message.success("已同意 " + resultFriendNotice.receiveUsername + "的好友请求")
-      this.getRequest('/friend/list?username=' + this.currentUser.username).then(friendList => {
+      this.getRequest('/friend/list?username=' + this.currentLogin.username).then(friendList => {
         this.$store.commit('INIT_FRIEND_LIST', friendList)
       })
       this.dialogFriendNotice = false;
     },
 
+
+
+
+
+
+
+
+
+
+
     showGroupNotice(notice) {
       this.noticeGroup = notice;
       if (notice.join) {
-        let user = this.currentUser;
+        let user = this.currentLogin;
         this.resultGroupNotice.senderUsername = user.username;
         this.resultGroupNotice.senderNickname = user.nickname;
         this.resultGroupNotice.avatarUrl = user.avatar;
@@ -429,6 +527,8 @@ export default {
       notice.confirm = 0;
       notice.verified = 1;
       resultGroupNotice.confirm = 0;
+      resultGroupNotice.join = 1;
+      resultGroupNotice.verified = 1;
       resultGroupNotice.flag = 0;
       resultGroupNotice.title = "已拒绝你的入群申请";
       resultGroupNotice.content = this.text;
@@ -444,13 +544,14 @@ export default {
       notice.confirm = 1;
       notice.verified = 1;
       resultGroupNotice.confirm = 1;
+      resultGroupNotice.join = 1;
       resultGroupNotice.verified = 1;
       resultGroupNotice.flag = 1;
       resultGroupNotice.title = "已同意你的入群申请";
       resultGroupNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(resultGroupNotice));
       this.$message.success("已同意 " + resultGroupNotice.receiverNickname + " 的入群申请")
-      this.getRequest('/group/list?username=' + this.currentUser.username).then(groupList => {
+      this.getRequest('/group/list?username=' + this.currentLogin.username).then(groupList => {
         this.$store.commit('INIT_GROUP_LIST', groupList)
       })
       this.dialogFriendNotice = false;

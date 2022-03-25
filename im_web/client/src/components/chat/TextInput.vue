@@ -1,11 +1,9 @@
 <template>
-  <div id="textinput">
+  <div v-if="chatType !== null" id="textinput">
     <div class="chat-plug">
-
       <el-col :span="1">
         <el-button type="text"><i class="el-icon-setting"></i></el-button>
       </el-col>
-
       <el-col :span="1">
         <el-form>
           <el-upload
@@ -20,12 +18,9 @@
           </el-upload>
         </el-form>
       </el-col>
-
       <el-col :span="1">
         <el-button type="text"><i class="el-icon-time"></i></el-button>
       </el-col>
-
-
     </div>
     <div class="text-div">
       <textarea class="scrollbar" placeholder="按 Ctrl + Enter 发送" v-model="content" v-on:keyup="addMessage"></textarea>
@@ -44,7 +39,7 @@ export default {
   name: "TextInput",
   data() {
     return {
-      headers: {Authorization: window.sessionStorage.getItem('tokenStr')},
+      headers: {Authorization: window.sessionStorage.getItem('token')},
       content: '',
       filename: null,
       param: {type: 'file'},
@@ -52,28 +47,47 @@ export default {
     }
   },
   computed: mapState([
-    'currentSession'
+    'currentLogin',
+    'currentUser',
+    'currentGroup',
+    'chatType',
   ]),
   mounted() {
     this.loginInfo = JSON.parse(window.sessionStorage.getItem('login-user'));
   },
   methods: {
     addMessage(e) {
+      let msgObj = {};
       if (e.ctrlKey && e.keyCode === 13 || e === 'send') {
-        if (this.content.length === 0) {
+        if (this.chatType == null) {
+          Message.error("请选择发送消息的对象！")
+        } else if (this.content.length === 0) {
           Message.error("请输入需要发送的内容！")
-        } else {
-          let msgObj = {};
-          msgObj.receiveUsername = this.currentSession.username;
+        } else if (this.chatType === 'private') {
+          msgObj.avatar = this.currentLogin.avatar;
+          msgObj.receiveUsername = this.currentUser.username;
           msgObj.messageContentType = "text"
           msgObj.content = this.content;
           msgObj.fileUrl = "";
-          msgObj.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-          msgObj.self = "1";
+          msgObj.sendTimeStr = new Date().format("yyyy-MM-dd hh:mm:ss");
+          msgObj.self = 1;
           this.$store.commit('addMessage', msgObj);
           this.$store.state.stomp.send('/ws/client/chat', {}, JSON.stringify(msgObj));
-          this.content = "";
+        } else if (this.chatType === 'public') {
+          msgObj.avatar = this.currentLogin.avatar;
+          msgObj.sendNickname = this.currentLogin.nickname;
+          msgObj.sendUsername = this.currentLogin.username;
+          msgObj.groupMaster = this.currentGroup.masterUsername;
+          msgObj.gid = this.currentGroup.gid;
+          msgObj.messageContentType = 'text';
+          msgObj.content = this.content;
+          msgObj.fileUrl = '';
+          msgObj.sendTimeStr = new Date().format("yyyy-MM-dd hh:mm:ss");
+          msgObj.self = 1;
+          this.$store.commit('addGroupMessage', msgObj);
+          this.$store.state.stomp.send('/ws/group/chat', {}, JSON.stringify(msgObj));
         }
+        this.content = "";
       }
     },
     /* 判断发送的文件大小 */
@@ -95,19 +109,40 @@ export default {
     // 发送文件信息
     sendFile(response) {
       let sendInfo = {};
-      sendInfo.receiveUsername = this.currentSession.username;
-      if (this.param.type === "img") {
-        sendInfo.messageContentType = "img";
-        sendInfo.content = this.filename;
-      } else {
-        sendInfo.messageContentType = "file";
-        sendInfo.content = this.filename;
+      if (this.chatType === null) {
+        Message.error("请选择接收文件的对象")
+      } else if (this.chatType === 'private') {
+        sendInfo.receiveUsername = this.currentUser.username;
+        if (this.param.type === "img") {
+          sendInfo.messageContentType = "img";
+          sendInfo.content = this.filename;
+        } else {
+          sendInfo.messageContentType = "file";
+          sendInfo.content = this.filename;
+        }
+        sendInfo.fileUrl = response.obj;
+        sendInfo.sendTimeStr = new Date().format("yyyy-MM-dd hh:mm:ss");
+        sendInfo.self = 1;
+        this.$store.state.stomp.send('/ws/client/chat', {}, JSON.stringify(sendInfo));
+        this.$store.commit('addMessage', sendInfo)
+      } else if (this.chatType === 'public') {
+        sendInfo.avatar = this.currentLogin.avatar;
+        sendInfo.sendNickname = this.currentLogin.nickname;
+        sendInfo.sendUsername = this.currentLogin.username;
+        sendInfo.groupMaster = this.currentGroup.masterUsername;
+        sendInfo.gid = this.currentGroup.gid;
+        if (this.param.type === 'img') {
+          sendInfo.messageContentType = 'img';
+        } else {
+          sendInfo.messageContentType = 'file';
+          sendInfo.content = this.filename;
+        }
+        sendInfo.fileUrl = response.obj;
+        sendInfo.sendTimeStr = new Date().format("yyyy-MM-dd hh:mm:ss");
+        sendInfo.self = 1;
+        this.$store.state.stomp.send('/ws/group/chat', {}, JSON.stringify(sendInfo));
+        this.$store.commit('addGroupMessage', sendInfo);
       }
-      sendInfo.fileUrl = response.obj;
-      sendInfo.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-      sendInfo.self = "1";
-      this.$store.state.stomp.send('/ws/client/chat', {}, JSON.stringify(sendInfo));
-      this.$store.commit('addMessage', sendInfo)
     },
   },
 }

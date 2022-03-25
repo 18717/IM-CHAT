@@ -11,22 +11,20 @@
     <!-- 好友列表 -->
     <el-main class="chat-friendsList-main scrollbar">
       <div v-for="friend in friendList" class="friendItem"
-           @click="changeCurrentSession(friend)">
-
-        <el-button :class="{ activeItem: currentSession ? friend.username === currentSession.username : false }">
+           @click="changeCurrentUser(friend)">
+        <el-button :class="{ activeItem: currentUser ? friend.username === currentUser.username : false }">
           <el-row>
             <el-col :span="4">
               <el-avatar shape="square" :size="40" :src="friend.avatar"></el-avatar>
             </el-col>
             <el-col :span="16">
-              <el-badge :is-dot="isDot[friend.username + '#' + currentUser.username]" class="item">
+              <el-badge :is-dot="isDot[friend.username + '#' + currentLogin.username]" class="item">
                 <p>{{ friend.nickname }}</p>
               </el-badge>
             </el-col>
           </el-row>
 
         </el-button>
-
       </div>
     </el-main>
     <!-- 搜索用户 -->
@@ -127,8 +125,8 @@ export default {
   },
   methods: {
     // 选中的聊天用户
-    changeCurrentSession: function (currentSession) {
-      this.$store.commit('changeCurrentSession', currentSession);
+    changeCurrentUser: function (currentUser) {
+      this.$store.commit('changeCurrentUser', currentUser);
     },
     // 初始化登录信息
     initUser() {
@@ -153,10 +151,11 @@ export default {
         friendParams.sendUsername = this.loginInfo.username;
         friendParams.receiveUsername = user.username;
         friendParams.flag = 0;
-        friendParams.content = "好友申请";
-        friendParams.comment = value;
+        friendParams.verified = 0;
+        friendParams.title = "好友申请";
+        friendParams.content = value;
         friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-        friendParams.requestType = 'add';
+        friendParams.businessType = 'add';
         this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
         this.$message({
           type: 'success',
@@ -168,8 +167,6 @@ export default {
           message: '取消操作'
         });
       });
-
-
     },
     // 好友列表搜索
     searchList() {
@@ -207,9 +204,9 @@ export default {
   },
   computed: mapState([
     'friendList',
-    'currentUser',
+    'currentLogin',
     'isDot',
-    'currentSession',
+    'currentUser',
   ]),
   mounted() {
     this.initUser();

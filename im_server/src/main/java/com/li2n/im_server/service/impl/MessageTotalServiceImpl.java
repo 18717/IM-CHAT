@@ -91,25 +91,30 @@ public class MessageTotalServiceImpl extends ServiceImpl<MessageTotalMapper, Mes
      * @return
      */
     @Override
-    public List<MessageModel> selectByUsername(String username) {
-
-        List<MessageModel> msgList = new ArrayList<>();
-        for (MessageTotal msg : msgMapper.selectByUsername(username)) {
-            MessageModel model = new MessageModel();
-            model.setSendUsername(msg.getSendUsername());
-            model.setReceiveUsername(msg.getReceiveUsername());
-            model.setContent(msg.getContent());
-            model.setSendTime(TimeFormat.localDateTimeToString(msg.getSendTime()));
-            model.setFileUrl(msg.getFileUrl());
-            model.setMessageContentType(msg.getMessageContentType());
+    public List<MessageTotal> selectByUsername(String username) {
+        List<MessageTotal> msgList = msgMapper.selectByUsername(username);
+        for (MessageTotal msg : msgList) {
+            msg.setSendTimeStr(TimeFormat.localDateTimeToString(msg.getSendTime()));
             if (msg.getSendUsername().equals(username)) {
-                model.setSelf(String.valueOf(1));
+                msg.setSelf(1);
             } else {
-                model.setSelf(String.valueOf(0));
+                msg.setSelf(0);
             }
-            msgList.add(model);
         }
         return msgList;
     }
 
+    /**
+     * 删除有关的聊天记录
+     *
+     * @param sender
+     * @param receiver
+     */
+    @Override
+    public void deleteMsgByKey(String sender, String receiver) {
+        String senderTo = sender + '@' + receiver;
+        String receiverTo = receiver + '@' + sender;
+        msgMapper.delete(new QueryWrapper<MessageTotal>().eq("mkey", senderTo));
+        msgMapper.delete(new QueryWrapper<MessageTotal>().eq("mkey", receiverTo));
+    }
 }

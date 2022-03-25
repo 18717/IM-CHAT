@@ -1,36 +1,130 @@
 <template>
   <div id="message">
-    <div v-if="currentSession" class="message-header">
-      <div class="username-div">
-        <el-header><b>{{ currentSession.nickname }}</b></el-header>
-      </div>
-      <div class="btn-div">
-        <el-button @click="changeCurrentSession" icon="el-icon-close" size="mini"></el-button>
-      </div>
-    </div>
-    <div class="message-info scrollbar" v-scroll-bottom="msgList">
-      <ul v-if="currentSession">
-        <li v-for="msg in msgList[currentUser.username + '#' + currentSession.username]">
-          <p class="time">
-            <span>{{ msg.sendTime }}</span>
-          </p>
-
-          <div class="main" :class="{self:msg.self === '1'}">
-            <img class="avatar" :src="msg.self === '1' ? currentUser.avatar : currentSession.avatar" alt="">
-            <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
-                 style="width: 100px; height: 100px; border-radius: 3px">
-            <p v-else class="text">
-              <span>{{ msg.content }}</span>
-              <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
-                <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
-                </el-button>
-              </a>
-            </p>
+    <div v-if="chatType === 'private'" class="chat-user">
+      <div v-if="currentUser" class="message-header">
+        <div class="username-div">
+          <el-header><b>{{ currentUser.nickname }}</b> ( {{ currentUser.username }} )</el-header>
+        </div>
+        <div class="btn-div">
+          <div class="close-btn">
+            <el-button @click="closeCurrentUser" icon="el-icon-close" size="mini"></el-button>
           </div>
+          <div class="show-btn">
+            <el-button type="text" @click="showUserInfo(currentUser)" icon="el-icon-more" size="mini"></el-button>
+          </div>
+        </div>
 
-        </li>
-      </ul>
+      </div>
+      <div class="message-info scrollbar" v-scroll-bottom="msgList">
+        <ul v-if="currentUser">
+          <li v-for="msg in msgList[currentLogin.username + '#' + currentUser.username]">
+            <p class="time" style="text-align: center;margin: 15px 0">
+              <span style="background-color: #dcdcdc;">{{ msg.sendTime }}</span>
+            </p>
+
+            <div v-if="msg.self !== 1" class="main no-self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div v-else class="main self">
+              <div style="height: 50%">
+                <img class="avatar" :src="currentLogin.avatar" alt="">
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <div>{{ msg.content }}</div>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
+
+    <div v-if="chatType === 'public'" class="chat-group">
+      <div v-if="currentGroup" class="message-header">
+        <div class="username-div">
+          <el-header><b>{{ currentGroup.groupName }}</b>( {{ currentGroup.memberNum }} )</el-header>
+        </div>
+        <div class="btn-div">
+          <div class="close-btn">
+            <el-button @click="closeCurrentGroup" icon="el-icon-close" size="mini"></el-button>
+          </div>
+          <div class="show-btn">
+            <el-button type="text" @click="showGroupInfo(currentGroup)" icon="el-icon-more" size="mini"></el-button>
+          </div>
+        </div>
+      </div>
+      <div class="message-info scrollbar" v-scroll-bottom="groupMsgList">
+        <ul v-if="currentGroup">
+          <li v-for="msg in groupMsgList[currentGroup.gid]">
+            <div v-if="msg.self !== 1" class="main no-self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
+                  <span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                </p>
+                <p v-else class="time">
+                  <span class="master-tag">群主</span><span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                </p>
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div v-else class="main self">
+              <div style="height: 50%">
+                <img class="avatar" :src="msg.avatar" alt="">
+                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
+                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span>
+                </p>
+                <p v-else class="time">
+                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span> <span class="master-tag">群主</span>
+                </p>
+              </div>
+              <div style="height: 50%">
+                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                     style="width: 100px; height: 100px; border-radius: 3px">
+                <div v-else class="text">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                    <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
+                    </el-button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -45,9 +139,12 @@ export default {
     }
   },
   computed: mapState([
-    'currentUser',
+    'currentLogin',
     'msgList',
-    'currentSession',
+    'groupMsgList',
+    'currentUser',
+    'currentGroup',
+    'chatType',
   ]),
   mounted() {
     // this.initUser();
@@ -58,12 +155,19 @@ export default {
     initUser() {
       this.getRequest('/client/login/info').then(resp => {
         this.loginInfo = resp;
-        console.log("message")
       })
     },
-
-    changeCurrentSession() {
-      this.$store.commit('changeCurrentSession', null)
+    closeCurrentUser() {
+      this.$store.commit('changeCurrentUser', null)
+    },
+    showUserInfo() {
+      this.$store.commit('showInfo', true)
+    },
+    closeCurrentGroup() {
+      this.$store.commit('changeCurrentGroup', null)
+    },
+    showGroupInfo() {
+      this.$store.commit('showInfo', true)
     },
   },
   filters: {
@@ -94,11 +198,11 @@ export default {
   display: flex;
 }
 
-.message-header > .username-div {
+.message-header .username-div {
   width: 50%;
 }
 
-/* 关闭按钮 */
+/* 按钮 */
 .message-header .btn-div {
   width: 50%;
   text-align: right;
@@ -112,9 +216,17 @@ export default {
   text-align: right;
 }
 
-.message-header button:hover {
+.close-btn button:hover {
   background-color: #ec7874;
   color: #FFFFFF;
+}
+
+.show-btn {
+  padding-right: 15px;
+}
+
+.show-btn button:hover {
+  background: none;
 }
 
 /* 消息列表区域 */
@@ -134,16 +246,25 @@ export default {
 }
 
 .message-info .time {
-  text-align: center;
+  /*text-align: right;*/
   margin: 7px 0;
+}
+
+.message-info .time .master-tag {
+  background-color: #fff;
+  height: auto;
+  padding: 0 5px;
+  font-size: 12px;
+  color: #409EFF;
+  border: 1px solid #d9ecff;
+  border-radius: 4px;
 }
 
 .message-info .time span {
   display: inline-block;
-  padding: 0 18px;
-  font-size: 12px;
-  color: #FFF;
-  background-color: #dcdcdc;
+  padding: 0 5px;
+  font-size: 13px;
+  color: #8c939d;
   border-radius: 2px;
 }
 
@@ -166,6 +287,10 @@ export default {
   border-radius: 4px;
   line-height: 30px;
   background-color: #fff;
+}
+
+.message-info .no-self {
+  text-align: left;
 }
 
 .message-info .self {

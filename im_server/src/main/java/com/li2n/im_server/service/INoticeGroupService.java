@@ -33,4 +33,10 @@ public interface INoticeGroupService extends IService<NoticeGroup> {
      * @param noticeGroup
      */
     void updateNoticeGroup(NoticeGroup noticeGroup);
+
+    /**
+     * 删除群通知
+     * @param gid
+     */
+    void delNoticeByGid(String gid);
 }

@@ -7,6 +7,7 @@ import com.li2n.im_server.pojo.model.QueryGroupModel;
 import com.li2n.im_server.pojo.model.RespBeanModel;
 import com.li2n.im_server.pojo.model.RespPageBeanModel;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -43,6 +44,13 @@ public interface IGroupInfoService extends IService<GroupInfo> {
      */
     RespBeanModel joinGroup(GroupModel model);
 
+    /**
+     * 根据Gid获取群聊信息
+     * @param gid
+     * @return
+     */
+    GroupInfo groupInfoByGid(String gid);
+
 
     /**
      * 获取用户的群列表
@@ -51,4 +59,34 @@ public interface IGroupInfoService extends IService<GroupInfo> {
      */
     List<GroupInfo> selectGroupList(String username);
 
+    /**
+     * 根据Gid获取群成员用户名
+     * @param gid
+     * @return
+     */
+    List<String> getGroupMembers(String gid);
+
+    /**
+     * 退出群聊
+     * @param username
+     * @param gid
+     * @return
+     */
+    Integer quitGroup(String username, String gid);
+
+    /**
+     * 更新群信息
+     * @param groupInfo
+     * @return
+     */
+    boolean updateGroupInfo(GroupInfo groupInfo);
+
+    /**
+     * 解散群聊
+     *
+     * @param principal
+     * @param gid
+     * @return
+     */
+    Integer dismissGroup(Principal principal, String gid);
 }

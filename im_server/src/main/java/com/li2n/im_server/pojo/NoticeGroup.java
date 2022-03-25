@@ -33,10 +33,6 @@ public class NoticeGroup implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "接收者昵称")
-    @TableField("receiver_nickname")
-    private String receiverNickname;
-
     @ApiModelProperty(value = "发送者用户名")
     @TableField("sender_username")
     private String senderUsername;
