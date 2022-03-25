@@ -27,6 +27,8 @@ public class FriendModel {
     private String sendUsername;
     @ApiModelProperty(value = "接收请求的用户名", required = true)
     private String receiveUsername;
+    @ApiModelProperty(value = "标题", required = true)
+    private String title;
     @ApiModelProperty(value = "请求内容", required = true)
     private String content;
     @ApiModelProperty(value = "请求备注", required = true)
@@ -38,7 +40,9 @@ public class FriendModel {
     @ApiModelProperty(value = "请求时间", required = true)
     private String sendTime;
     @ApiModelProperty(value = "反馈标记", required = true)
-    private int flag;
+    private Integer flag;
+    @ApiModelProperty(value = "是否已验证", required = true)
+    private Integer verified;
     @ApiModelProperty(value = "标记时间", required = true)
     private String flagTime;
 

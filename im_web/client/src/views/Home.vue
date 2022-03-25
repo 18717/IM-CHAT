@@ -109,10 +109,10 @@
                          style="background: none; border: 0;">更多操作
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                  <span @click="editGroupInfo(currentGroup)"><el-dropdown-item icon="el-icon-edit"
-                                                                               style="color: #0000ff">编辑信息</el-dropdown-item></span>
-                <span @click="delGroup(currentGroup)"><el-dropdown-item icon="el-icon-circle-close"
-                                                                        style="color: #ff0000">解散群聊</el-dropdown-item></span>
+                  <span @click="dialogGroupForm = true"><el-dropdown-item icon="el-icon-edit"
+                                                                          style="color: #0000ff">编辑信息</el-dropdown-item></span>
+                <span @click="dismissGroup(currentGroup)"><el-dropdown-item icon="el-icon-circle-close"
+                                                                            style="color: #ff0000">解散群聊</el-dropdown-item></span>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
@@ -163,7 +163,6 @@
             </el-descriptions-item>
           </el-descriptions>
 
-
           <el-descriptions v-else :column="1" class="group-member2"
                            size="small" border>
             <el-descriptions-item v-for="member in currentGroup.memberArr">
@@ -184,6 +183,35 @@
         </div>
 
       </el-drawer>
+
+      <!-- 修改群聊信息 -->
+      <el-dialog :visible.sync="dialogGroupForm"
+                 v-if="currentGroup !== null"
+                 title="修改群信息"
+                 :destroy-on-close="true"
+                 :show-close="false"
+                 style="height: 400px">
+        <el-card class="edit-group-info">
+          <el-form :model="currentGroup" label-position="left">
+            <el-form-item label="群名" label-width="80px">
+              <el-input :value="currentGroup.groupName" maxlength="9" show-word-limit clearable
+                        v-model="currentGroup.groupName"></el-input>
+            </el-form-item>
+            <el-form-item label="群描述" label-width="80px">
+              <el-input type="textarea" :value="currentGroup.groupDescribe"
+                        maxlength="30" show-word-limit
+                        :autosize="{ minRows: 2, maxRows: 2}"
+                        v-model="currentGroup.groupDescribe">
+              </el-input>
+            </el-form-item>
+          </el-form>
+        </el-card>
+        <el-card class="edit-submit">
+          <el-button @click="dialogGroupForm = false" type="info" plain>取消修改</el-button>
+          <el-divider/>
+          <el-button @click="editGroupInfo(currentGroup)" type="primary" plain>确认修改</el-button>
+        </el-card>
+      </el-dialog>
     </div>
   </div>
 
@@ -195,7 +223,6 @@ import Message from "@/components/chat/Message";
 import TextInput from "@/components/chat/TextInput";
 import Friend from "@/components/chat/Friend";
 import {mapState} from "vuex";
-import {postRequest} from "@/api/api";
 
 export default {
   name: "Home",
@@ -204,6 +231,11 @@ export default {
     meta: [
       {name: 'description', content: 'IM-CHAT'}
     ]
+  },
+  data() {
+    return {
+      dialogGroupForm: false,
+    }
   },
   created() {
     this.$store.dispatch("connect")
@@ -219,7 +251,6 @@ export default {
     'showInfo',
   ]),
   methods: {
-
     delFriend(user) {
       let th = this
       let message = '确定和好友 ' + user.nickname + ' 解除好友关系，是否继续？';
@@ -236,7 +267,9 @@ export default {
               friendNotice.sendNickname = this.currentLogin.nickname;
               friendNotice.sendUsername = this.currentLogin.username;
               friendNotice.receiveUsername = user.username;
-              friendNotice.content = "解除好友关系";
+              friendNotice.title = "解除好友关系";
+              friendNotice.flag = 1;
+              friendNotice.del = 1;
               friendNotice.businessType = 'del';
               friendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
               this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendNotice));
@@ -252,20 +285,115 @@ export default {
         });
       });
     },
-
     quitGroup(group) {
-      alert(group.gid + "退出")
+      this.$confirm('您将要退出群聊, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.postRequest('/group/quit?gid=' + group.gid + "&username=" + this.currentLogin.username).then(resp => {
+          this.refreshGroupList();
+          // 发送通知给群主;
+          let notice = {};
+          notice.businessType = 'quit';
+          notice.confirm = 1;
+          notice.verified = 1;
+          notice.quit = 1;
+          notice.flag = 1;
+          notice.title = "用户已退出群聊";
+          notice.avatarUrl = this.currentLogin.avatar;
+          notice.senderNickname = this.currentLogin.nickname;
+          notice.senderUsername = this.currentLogin.username;
+          notice.receiverUsername = this.currentGroup.masterUsername;
+          notice.groupName = this.currentGroup.groupName;
+          notice.gid = this.currentGroup.gid;
+          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
+          this.$store.commit('removeCurrent')
+          this.$router.go(0)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消操作'
+        });
+      });
     },
-    delGroup(group) {
-      alert(group.gid + "解散")
-      // TODO 刷新群信息
+    forceQuitUser(username) {
+      let message = '是否将用户 ' + username + '移出群聊？';
+      this.$confirm(message, '提示', {
+        confirmButtonText: '移出',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.postRequest('/group/force-quit?gid=' + this.currentGroup.gid + "&username=" + username).then(resp => {
+          this.refreshGroupList();
+          // 发送通知给用户
+          let notice = {};
+          notice.businessType = 'forceQuit';
+          notice.confirm = 1;
+          notice.verified = 1;
+          notice.forceQuit = 1;
+          notice.flag = 1;
+          notice.title = "您已被移出群聊";
+          notice.avatarUrl = this.currentLogin.avatar;
+          notice.senderNickname = this.currentLogin.nickname;
+          notice.senderUsername = this.currentLogin.username;
+          notice.receiverUsername = username;
+          notice.groupName = this.currentGroup.groupName;
+          notice.gid = this.currentGroup.gid;
+          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
+          this.$router.go(0)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消操作'
+        });
+      });
     },
-    forceQuitUser(user) {
-      alert("强制退出" + user)
-      // TODO 刷新群信息
+    dismissGroup(group) {
+      let message = '是否解散群聊 ' + group.groupName + ' ，此操作不可取消？';
+      this.$confirm(message, '提示', {
+        confirmButtonText: '确定解散',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.postRequest('/group/dismiss?gid=' + group.gid).then(resp => {
+          this.refreshGroupList();
+          // 发送通知给用户
+          let notice = {};
+          notice.businessType = 'dismiss';
+          notice.senderUsername = group.masterUsername;
+          notice.gid = group.gid;
+          notice.groupName = group.groupName;
+          notice.members = group.members;
+          notice.title = "群聊已被群主解散";
+          notice.confirm = 1;
+          notice.verified = 1;
+          notice.flag = 1;
+          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
+          this.$router.go(0)
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消操作'
+        });
+      });
     },
     editGroupInfo(groupInfo) {
-      alert("修改群信息" + groupInfo)
+      this.dialogGroupForm = false;
+      this.postRequest('/group/edit-info', groupInfo).then(resp => {
+        this.refreshGroupList();
+      })
+    },
+    refreshGroupList() {
+      this.getRequest('/group/list?username=' + this.currentLogin.username).then(groupList => {
+        this.$store.commit('INIT_GROUP_LIST', groupList)
+      })
     },
   },
   components: {
@@ -357,6 +485,35 @@ export default {
 .desc-info .el-divider {
   padding: 0;
   margin: 0;
+}
+
+.edit-group-info {
+  display: inline-block;
+  width: 70%;
+  height: 165px;
+}
+
+.edit-group-info textarea {
+  resize: none;
+  font-family: "HarmonyOS_Sans_Regular", sans-serif;
+}
+
+.el-textarea .el-input__count {
+  height: 27px;
+  background: none !important;
+}
+
+.edit-submit {
+  display: inline-block;
+  width: 27%;
+  height: 100%;
+  margin-left: 15px;
+  text-align: center;
+}
+
+.edit-submit button {
+  margin: 11px 0;
+  height: 100%;
 }
 
 #chat {

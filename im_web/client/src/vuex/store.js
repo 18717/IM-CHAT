@@ -63,6 +63,12 @@ const store = new Vuex.Store({
         showInfo(state) {
             state.showInfo = !state.showInfo;
         },
+        // 取消当前所有的选中
+        removeCurrent(state) {
+            state.showInfo = false;
+            state.currentUser = null;
+            state.currentGroup = null;
+        },
         addMessage(state, msg) {
             let key = state.currentLogin.username + '#' + msg.receiveUsername;
             let msgArr = state.msgList[key];
@@ -368,9 +374,7 @@ const store = new Vuex.Store({
                     context.commit('addNoticeGroup', notice.body);
                 });
 
-                let user;
                 getRequest('/client/login/info').then(loginInfo => {
-                    user = loginInfo;
                     context.commit('INIT_CURRENTUSER', loginInfo)
                 }).then(() => {
                     getRequest('/friend/list?username=' + context.state.currentLogin.username).then(friendList => {

@@ -65,4 +65,14 @@ public class MessageGroupServiceImpl extends ServiceImpl<MessageGroupMapper, Mes
         }
         return messageGroupHashMap;
     }
+
+    /**
+     * 清空群聊天记录
+     *
+     * @param gid
+     */
+    @Override
+    public void delMsgByGid(String gid) {
+        messageGroupMapper.delete(new QueryWrapper<MessageGroup>().eq("gid", gid));
+    }
 }

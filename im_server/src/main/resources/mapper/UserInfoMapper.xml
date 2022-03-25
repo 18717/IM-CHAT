@@ -57,6 +57,7 @@
         <if test="null != params.email and '' != params.email">
             AND u.email LIKE CONCAT('%', #{params.email}, '%')
         </if>
+        AND u.uid != ''
     </select>
 
     <!-- 查询某个用户 -->

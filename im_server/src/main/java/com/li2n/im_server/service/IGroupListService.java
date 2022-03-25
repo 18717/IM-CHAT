@@ -21,4 +21,12 @@ public interface IGroupListService extends IService<GroupList> {
      * @return
      */
     List<String> gidListByUsername(String username);
+
+
+    /**
+     * 更新用户群列表信息
+     * @param username
+     * @param groupList
+     */
+    void updateGroupList(String username, GroupList groupList);
 }

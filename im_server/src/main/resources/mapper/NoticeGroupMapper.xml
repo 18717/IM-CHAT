@@ -7,7 +7,6 @@
         <id column="id" property="id"/>
         <result column="receiver_nickname" property="receiverNickname"/>
         <result column="sender_username" property="senderUsername"/>
-        <result column="receiver_username" property="receiverUsername"/>
         <result column="title" property="title"/>
         <result column="content" property="content"/>
         <result column="gid" property="gid"/>
@@ -37,7 +36,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, sender_username, receiver_username, title, content, gid, is_confirm, is_join, is_quit, is_force_quit, is_online, is_verified, is_flag, create_time, update_time
+        id, sender_username, title, content, gid, is_confirm, is_join, is_quit, is_force_quit, is_online, is_verified, is_flag, create_time, update_time
     </sql>
 
     <!-- 根据用户名查询群通知（联表查询） -->

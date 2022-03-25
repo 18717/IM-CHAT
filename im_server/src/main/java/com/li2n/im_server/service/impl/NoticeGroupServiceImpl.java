@@ -1,5 +1,6 @@
 package com.li2n.im_server.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.li2n.im_server.mapper.NoticeGroupMapper;
 import com.li2n.im_server.pojo.NoticeGroup;
@@ -78,5 +79,15 @@ public class NoticeGroupServiceImpl extends ServiceImpl<NoticeGroupMapper, Notic
     public void updateNoticeGroup(NoticeGroup noticeGroup) {
         noticeGroupMapper.updateNotice(noticeGroup, TimeFormat.stringToLocalDateTime(noticeGroup.getFlagTime()));
         selectByUsername(noticeGroup.getSenderUsername());
+    }
+
+    /**
+     * 删除群通知
+     *
+     * @param gid
+     */
+    @Override
+    public void delNoticeByGid(String gid) {
+        noticeGroupMapper.delete(new QueryWrapper<NoticeGroup>().eq("gid", gid));
     }
 }

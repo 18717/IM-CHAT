@@ -30,4 +30,10 @@ public interface IMessageGroupService extends IService<MessageGroup> {
      * @return
      */
     Map<String, List<MessageGroup>> msgListByUsername(String username);
+
+    /**
+     * 清空群聊天记录
+     * @param gid
+     */
+    void delMsgByGid(String gid);
 }

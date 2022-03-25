@@ -11,13 +11,14 @@
         <result column="group_describe" property="groupDescribe"/>
         <result column="members" property="members"/>
         <result column="member_num" property="memberNum"/>
+        <result column="is_deleted" property="deleted"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, gid, group_name, master_username, group_describe, members, member_num, create_time, update_time
+        id, gid, group_name, master_username, group_describe, members, member_num, is_deleted, create_time, update_time
     </sql>
 
     <!-- 分页查询 -->
@@ -35,6 +36,15 @@
         <if test="null != params.masterUsername and '' != params.masterUsername">
             AND g.master_username LIKE CONCAT('%', #{params.masterUsername}, '%')
         </if>
+        AND g.is_deleted = 0
+    </select>
+
+    <!-- 查询群信息 -->
+    <select id="selectGroupInfo" resultMap="BaseResultMap">
+        SELECT *
+        FROM group_info
+        WHERE gid = #{gid}
+          AND is_deleted = 0
     </select>
 
     <!-- 根据Gid更新群成员列表 -->
@@ -44,6 +54,13 @@
             member_num  = #{groupInfo.memberNum},
             update_time = #{groupInfo.updateTime}
         WHERE gid = #{groupInfo.gid}
+    </update>
+
+    <!-- 逻辑删除群 -->
+    <update id="tombstonedByGid">
+        UPDATE group_info
+        SET is_deleted = 1
+        WHERE gid = #{gid}
     </update>
 
 </mapper>

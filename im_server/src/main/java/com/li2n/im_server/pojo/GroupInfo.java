@@ -53,9 +53,13 @@ public class GroupInfo implements Serializable {
     @TableField("members")
     private String members;
 
-    @ApiModelProperty(value = "成员")
+    @ApiModelProperty(value = "成员数")
     @TableField("member_num")
     private int memberNum;
+
+    @ApiModelProperty(value = "逻辑删除")
+    @TableField("is_deleted")
+    private Integer deleted;
 
     @ApiModelProperty(value = "创建时间")
     @TableField("create_time")

@@ -38,4 +38,15 @@ public class GroupListServiceImpl extends ServiceImpl<GroupListMapper, GroupList
         String[] gids = groupList.getGids().split(",");
         return new ArrayList<>(Arrays.asList(gids));
     }
+
+    /**
+     * 更新用户群列表信息
+     *
+     * @param username
+     * @param groupList
+     */
+    @Override
+    public void updateGroupList(String username, GroupList groupList) {
+        groupListMapper.update(groupList, new QueryWrapper<GroupList>().eq("username", username));
+    }
 }

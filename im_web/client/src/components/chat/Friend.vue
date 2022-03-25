@@ -151,8 +151,9 @@ export default {
         friendParams.sendUsername = this.loginInfo.username;
         friendParams.receiveUsername = user.username;
         friendParams.flag = 0;
-        friendParams.content = "好友申请";
-        friendParams.comment = value;
+        friendParams.verified = 0;
+        friendParams.title = "好友申请";
+        friendParams.content = value;
         friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
         friendParams.businessType = 'add';
         this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
@@ -166,8 +167,6 @@ export default {
           message: '取消操作'
         });
       });
-
-
     },
     // 好友列表搜索
     searchList() {

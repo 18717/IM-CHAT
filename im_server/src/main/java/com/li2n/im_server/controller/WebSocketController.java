@@ -1,5 +1,6 @@
 package com.li2n.im_server.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.li2n.im_server.pojo.*;
 import com.li2n.im_server.pojo.model.FriendModel;
 import com.li2n.im_server.pojo.model.GroupModel;
@@ -172,57 +173,46 @@ public class WebSocketController {
         noticeFriend.setReceiveUsername(model.getReceiveUsername());
         noticeFriend.setCreateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
         noticeFriend.setSendTime(model.getSendTime());
-        noticeFriend.setFlag(model.getFlag());
-        // 是否在线
-        if (!Objects.isNull(receiveUser)) {
-            noticeFriend.setOnline(1);
-        } else {
-            noticeFriend.setOnline(0);
-        }
+        noticeFriend.setConfirm(1);
+        noticeFriend.setVerified(1);
+        noticeFriend.setFlag(1);
+        noticeFriend.setAdd(0);
+        noticeFriend.setDel(0);
+        noticeFriend.setOnline(null);
+
         // 添加/删除
         if (model.isAdd()) {
-            noticeFriend.setContent(model.getComment());
             noticeFriend.setAdd(1);
-            noticeFriend.setDel(0);
             if (model.getResult() != null) {
                 if (model.getResult()) {
-                    noticeFriend.setTitle("已同意申请");
-                    noticeFriend.setContent(model.getComment());
-                    noticeFriend.setConfirm(1);
-                    noticeFriend.setVerified(1);
-                    noticeFriend.setSendTime(model.getSendTime());
-                    noticeFriend.setResult(model.getResult());
+                    noticeFriend.setTitle(model.getTitle());
+                    // 更新好友列表
                     FriendModel friendModel = new FriendModel();
                     friendModel.setSendUsername(model.getReceiveUsername());
                     friendModel.setReceiveUsername(model.getSendUsername());
                     userFriendListService.addFriendRecord(friendModel);
                 } else {
-                    noticeFriend.setTitle("已拒绝申请");
-                    noticeFriend.setContent(model.getComment());
-                    noticeFriend.setSendTime(model.getSendTime());
-                    noticeFriend.setResult(model.getResult());
                     noticeFriend.setConfirm(0);
-                    noticeFriend.setVerified(1);
+                    noticeFriend.setTitle(model.getTitle());
+                    noticeFriend.setContent(model.getContent());
                 }
                 noticeFriend.setFlagTime(model.getFlagTime());
                 noticeFriend.setUpdateTime(LocalDateTime.now());
                 noticeFriendService.updateNoticeFriend(noticeFriend);
             } else {
-                noticeFriend.setTitle(model.getContent());
+                noticeFriend.setFlag(0);
+                noticeFriend.setTitle(model.getTitle());
+                noticeFriend.setContent(model.getContent());
                 noticeFriend.setVerified(0);
             }
         } else if (model.isDel()) {
-            noticeFriend.setAdd(0);
+            noticeFriend.setTitle(model.getTitle());
             noticeFriend.setDel(1);
-            noticeFriend.setVerified(1);
-            noticeFriend.setConfirm(1);
-            noticeFriend.setFlag(1);
             messageTotalService.deleteMsgByKey(noticeFriend.getSendUsername(), noticeFriend.getReceiveUsername());
-            noticeFriend.setTitle(model.getContent());
         }
         noticeFriendService.addNoticeRecord(noticeFriend);
         updateRedisFriendNotice(model.getReceiveUsername(), noticeFriend);
-        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/notice/friend", noticeFriend);
+        simpMessagingTemplate.convertAndSendToUser(model.getReceiveUsername(), "/topic/notice/friend", model);
 
     }
 
@@ -234,7 +224,6 @@ public class WebSocketController {
     @MessageMapping("/ws/group/send")
     public void sendGroupRequest(GroupModel model) {
         NoticeGroup noticeGroup = new NoticeGroup();
-        noticeGroup.setReceiverNickname(model.getSenderNickname());
         noticeGroup.setSenderUsername(model.getSenderUsername());
         noticeGroup.setReceiverUsername(model.getReceiverUsername());
         noticeGroup.setGid(model.getGid());
@@ -251,36 +240,60 @@ public class WebSocketController {
         noticeGroup.setCreateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
         noticeGroup.setSendTime(model.getSendTime());
 
+        UserInfo user = redisCache.getCacheObject(clientLoginKey + model.getSenderUsername());
+        UserInfo userInfo = new UserInfo();
+        userInfo.setAvatar(user.getAvatar());
+        userInfo.setNickname(user.getNickname());
+        userInfo.setGender(user.getGender());
+        noticeGroup.setUserInfo(userInfo);
+
+        noticeGroup.setGroupInfo(groupInfoService.getOne(new QueryWrapper<GroupInfo>().eq("gid", model.getGid())));
+
         // 业务判断处理
-        if (model.isJoin()) {
-            noticeGroup.setJoin(1);
-            if (model.getConfirm() != null) {
-                if (model.isConfirm()) {
-                    groupInfoService.joinGroup(model);
+        if (model.isDismiss()) {
+            StringBuilder sb = new StringBuilder(model.getMembers());
+            sb.delete(0, model.getSenderUsername().length() + 1);
+            String[] usernames = String.valueOf(sb).split(",");
+            for (String username : usernames) {
+                if (!"".equals(username)) {
+                    model.setReceiverUsername(username);
+                    noticeGroup.setReceiverUsername(username);
+                    noticeGroupService.addNoticeRecord(noticeGroup);
+                    updateRedisGroupNotice(username, noticeGroup);
+                    simpMessagingTemplate.convertAndSendToUser(model.getReceiverUsername(), "/topic/notice/group", model);
                 }
-                noticeGroup.setFlag(1);
-                noticeGroup.setConfirm(model.getConfirm());
-                noticeGroup.setFlagTime(model.getFlagTime());
-                noticeGroup.setUpdateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
-                noticeGroupService.updateNoticeGroup(noticeGroup);
-            } else {
-                model.setFlagTime(model.getSendTime());
-                noticeGroup.setFlagTime(model.getFlagTime());
-                noticeGroup.setFlag(null);
-                noticeGroup.setVerified(null);
-                noticeGroup.setConfirm(null);
             }
-        } else if (model.isQuit()) {
-            noticeGroup.setQuit(1);
-        } else if (model.isForceQuit()) {
-            noticeGroup.setForceQuit(1);
+        } else {
+            if (model.isJoin()) {
+                noticeGroup.setJoin(1);
+                if (model.getConfirm() != null) {
+                    if (model.isConfirm()) {
+                        groupInfoService.joinGroup(model);
+                    }
+                    noticeGroup.setFlag(1);
+                    noticeGroup.setConfirm(model.getConfirm());
+                    noticeGroup.setFlagTime(model.getFlagTime());
+                    noticeGroup.setUpdateTime(TimeFormat.stringToLocalDateTime(model.getSendTime()));
+                    noticeGroupService.updateNoticeGroup(noticeGroup);
+                } else {
+                    model.setFlagTime(model.getSendTime());
+                    noticeGroup.setFlagTime(model.getFlagTime());
+                    noticeGroup.setFlag(null);
+                    noticeGroup.setVerified(null);
+                    noticeGroup.setConfirm(null);
+                }
+            } else if (model.isQuit()) {
+                noticeGroup.setQuit(1);
+            } else if (model.isForceQuit()) {
+                noticeGroup.setForceQuit(1);
+            }
+
+            // 操作数据库和redis
+            noticeGroupService.addNoticeRecord(noticeGroup);
+            updateRedisGroupNotice(model.getReceiverUsername(), noticeGroup);
+            simpMessagingTemplate.convertAndSendToUser(model.getReceiverUsername(), "/topic/notice/group", model);
         }
 
-        // 操作数据库和redis
-        noticeGroupService.addNoticeRecord(noticeGroup);
-        updateRedisGroupNotice(model.getReceiverUsername(), noticeGroup);
-
-        simpMessagingTemplate.convertAndSendToUser(model.getReceiverUsername(), "/topic/notice/group", model);
     }
 
     /**
