@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.MessageGroupMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.GroupMessage">
+        <id column="id" property="id" />
+        <result column="gid" property="gid" />
+        <result column="sender" property="sender" />
+        <result column="content_type" property="contentType" />
+        <result column="content" property="content" />
+        <result column="file_url" property="fileUrl" />
+        <result column="send_time" property="sendTime" />
+        <result column="is_self" property="isSelf" />
+    </resultMap>
+
+    <resultMap id="UserWithMsgGroupResultMap" type="com.li2n.im_server.entity.GroupMessage" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="user" ofType="com.li2n.im_server.entity.User">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, gid, sender, content_type, content, file_url, send_time, is_self
+    </sql>
+
+    <select id="msgListByGid" resultMap="UserWithMsgGroupResultMap">
+        SELECT
+            group_message.*,
+            user.avatar,
+            user.nickname,
+            user.gender
+        FROM
+            group_message,
+            user
+        WHERE
+            group_message.gid = #{gid}
+          AND user.username = group_message.sender
+        ORDER BY
+            group_message.send_time
+    </select>
+
+</mapper>

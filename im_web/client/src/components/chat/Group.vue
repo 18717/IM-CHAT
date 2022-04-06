@@ -1,11 +1,10 @@
 <template>
   <div id="group">
-    <!-- 搜索框 -->
     <el-header class="chat-friendsList-header">
-      <el-input placeholder="搜索" clearable prefix-icon="el-icon-search" size="mini"
-                style="width: 170px; padding-right: 5px">
-      </el-input>
-      <el-button size="mini" @click="dialogVisible = true">添加/创建</el-button>
+      <div style="width: 60%; display: inline-block"><h5><i class="el-icon-message"></i>&emsp; 群聊列表</h5></div>
+      <div style="width: 40%; display: inline-block">
+        <el-button size="mini" type="primary" plain @click="dialogVisible = true" style="border: 0">添加/创建</el-button>
+      </div>
     </el-header>
 
     <!-- 群列表 -->
@@ -58,7 +57,7 @@
               <el-select v-model="query.condition" slot="prepend" placeholder="请选择" style="width: 90px">
                 <el-option label="GID" value="gid"></el-option>
                 <el-option label="群名" value="groupName"></el-option>
-                <el-option label="群主名" value="masterUsername"></el-option>
+                <el-option label="群主名" value="leader"></el-option>
               </el-select>
               <el-button slot="append" icon="el-icon-search" @click="doSearch('search')">搜索</el-button>
             </el-input>
@@ -73,7 +72,7 @@
               <el-col :span="18" style="line-height: 40px">
                 <b><i class="el-icon-cloudy"></i>&emsp;{{ group.groupName }}</b>
               </el-col>
-              <el-col :span="6" style="text-align: right">
+              <el-col :span="6" style="text-align: right" v-if="currentLogin.username !== group.leader">
                 <el-button type="text" @click="sendJoinGroupRequest(group)">申请加群</el-button>
               </el-col>
             </el-row>
@@ -88,7 +87,7 @@
               <el-tag size="small">GID：{{ group.gid }}</el-tag>
             </el-row>
             <el-row>
-              <el-tag size="small">群主：{{ group.masterUsername }}</el-tag>
+              <el-tag size="small">群主：{{ group.user.nickname }}</el-tag>
             </el-row>
             <el-row>
               <el-col :span="8">
@@ -225,6 +224,7 @@
 <script>
 import {Message} from "element-ui";
 import {mapState} from "vuex";
+import {convertTime} from "@/api/api";
 
 export default {
   name: "Group",
@@ -274,23 +274,26 @@ export default {
     checkedGroup(group) {
       this.$store.commit('changeCurrentGroup', group);
     },
-
     // 搜索
     doSearch(params) {
+      var check = new RegExp("[\u4e00-\u9fa5]");
       if (params === 'search') {
         if (this.query.content == null) {
           Message.error("请输入搜索关键字")
-        } else {
+        } else if ((this.query.condition === 'gid' && !check.test(this.query.content)) || this.query.condition !== 'gid') {
           this.getRequest('/group/search?currentPage=' + this.currentPage + '&size=' + this.pageSize + '&' + this.query.condition + '=' + this.query.content).then(resp => {
             this.groupData = resp.data;
+            for (var i = 0; i < this.groupData.length; i++) {
+              this.groupData[i].createTime = convertTime(this.groupData[i].createTime);
+            }
             this.total = resp.total;
           })
+        } else {
+          Message.error("GID不能含有中文");
         }
       } else if (params === 'clear') {
         this.data = null;
       }
-
-
     },
     handleClose(done) {
       done();
@@ -302,26 +305,27 @@ export default {
     },
     // 申请加群
     sendJoinGroupRequest(group) {
-      let groupParams = {};
+      let groupNotice = {};
       this.$prompt('入群验证信息', '申请入群', {
         confirmButtonText: '发送请求',
         cancelButtonText: '取消',
       })
           .then(({value}) => {
             // 发送入群申请
-            groupParams.avatarUrl = this.currentLogin.avatar;
-            groupParams.senderNickname = this.currentLogin.nickname;
-            groupParams.senderUsername = this.currentLogin.username;
-            groupParams.gender = this.currentLogin.gender;
-            groupParams.receiverUsername = group.masterUsername;
-            groupParams.groupName = group.groupName;
-            groupParams.gid = group.gid;
-            groupParams.title = "入群申请";
-            groupParams.content = value;
-            groupParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-            groupParams.businessType = 'join';
-            console.log(groupParams)
-            this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(groupParams));
+            groupNotice.sender = this.currentLogin.username;
+            groupNotice.receiver = group.leader;
+            groupNotice.gender = this.currentLogin.gender;
+            groupNotice.groupName = group.groupName;
+            groupNotice.gid = group.gid;
+            groupNotice.title = "入群申请";
+            groupNotice.content = value;
+            groupNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
+            groupNotice.join = 1;
+            groupNotice.dismiss = 0;
+            groupNotice.quit = 0;
+            groupNotice.forceQuit = 0;
+            groupNotice.confirm = 0;
+            this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(groupNotice));
             this.$message({
               type: 'success',
               message: '已向群聊【' + group.groupName + '】发送加入申请！'
@@ -344,11 +348,10 @@ export default {
       this.groupInfo = {};
     },
     toFound() {
-      this.groupInfo.masterUsername = this.currentLogin.username;
+      this.groupInfo.leader = this.currentLogin.username;
       this.postRequest('/group/found', this.groupInfo).then(resp => {
         if (resp) {
-          this.foundGroupRequest = resp.obj;
-          console.log(this.foundGroupRequest)
+          this.foundGroupRequest = resp.data;
           if (this.foundGroupRequest.gid) {
             this.isFound = true;
           } else {
@@ -361,7 +364,7 @@ export default {
       })
     },
     updateCaptcha() {
-      this.captchaUrl = '/captcha/group/found?username=' + this.currentLogin.username + '?time=' + new Date();
+      this.captchaUrl = '/captcha/group/found?username=' + this.currentLogin.username + '?time' + new Date();
     },
   }
 }

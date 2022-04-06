@@ -1,8 +1,7 @@
 package com.li2n.im_server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.li2n.im_server.pojo.NoticeServer;
-import com.li2n.im_server.pojo.model.NoticeModel;
+import com.li2n.im_server.entity.NoticeServer;
 
 import java.util.List;
 
@@ -27,6 +26,6 @@ public interface INoticeServerService extends IService<NoticeServer> {
      * @param username
      * @return
      */
-    List<NoticeModel> selectByUsername(String username);
+    List<NoticeServer> selectByUsername(String username);
 
 }

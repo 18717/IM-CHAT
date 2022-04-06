@@ -2,8 +2,8 @@ package com.li2n.im_server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.li2n.im_server.entity.GroupList;
 import com.li2n.im_server.mapper.GroupListMapper;
-import com.li2n.im_server.pojo.GroupList;
 import com.li2n.im_server.service.IGroupListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -35,7 +36,16 @@ public class GroupListServiceImpl extends ServiceImpl<GroupListMapper, GroupList
     @Override
     public List<String> gidListByUsername(String username) {
         GroupList groupList = groupListMapper.selectOne(new QueryWrapper<GroupList>().eq("username", username));
-        String[] gids = groupList.getGids().split(",");
+        String[] gids = {};
+        try {
+            String gidList = groupList.getGids();
+            if (Objects.equals(gidList, "")) {
+                return null;
+            }
+            gids = groupList.getGids().split(",");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return new ArrayList<>(Arrays.asList(gids));
     }
 

@@ -1,7 +1,7 @@
 <template>
   <div id="set">
     <el-header class="chat-set-header">
-      <h5><i class="el-icon-more-outline"></i>&emsp;设置中心</h5>
+      <h5><i class="el-icon-menu"></i>&emsp;个人中心</h5>
     </el-header>
 
     <!-- 功能列 -->

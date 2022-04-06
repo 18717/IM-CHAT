@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.GroupMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.GroupInfo">
+        <id column="id" property="id"/>
+        <result column="gid" property="gid"/>
+        <result column="group_name" property="groupName"/>
+        <result column="leader" property="leader"/>
+        <result column="group_describe" property="groupDescribe"/>
+        <result column="members" property="members"/>
+        <result column="member_num" property="memberNum"/>
+        <result column="is_deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="UserWithGroupResultMap" type="com.li2n.im_server.entity.GroupInfo" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="user" ofType="com.li2n.im_server.entity.User">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+            <result column="email" property="email"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, gid, group_name, leader, group_describe, members, member_num, is_deleted, create_time, update_time
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="selectListByPage" resultMap="UserWithGroupResultMap">
+        SELECT
+        group_info.*,
+        `user`.nickname,`user`.avatar,`user`.gender
+        FROM
+        group_info,
+        `user`
+        WHERE
+        <if test="null != params.gid and '' != params.gid">
+            AND group_info.gid LIKE CONCAT('%', #{params.gid}, '%')
+        </if>
+        <if test="null != params.groupName and '' != params.groupName">
+            AND group_info.group_name LIKE CONCAT('%', #{params.groupName}, '%')
+        </if>
+        <if test="null != params.leader and '' != params.leader">
+            AND group_info.leader LIKE CONCAT('%', #{params.leader}, '%')
+        </if>
+        AND group_info.is_deleted = 0
+        AND group_info.leader = `user`.username
+        ORDER BY
+        group_info.create_time
+    </select>
+
+    <!-- 查询群信息 -->
+    <select id="selectGroupInfo" resultMap="UserWithGroupResultMap">
+        SELECT group_info.*,
+               user.nickname,
+               user.avatar,
+               user.gender
+        FROM group_info,
+             user
+        WHERE gid = #{gid}
+          AND group_info.is_deleted = 0
+          AND group_info.leader = user.username
+    </select>
+
+    <!-- 根据Gid更新群成员列表 -->
+    <update id="updateMemberList">
+        UPDATE group_info
+        SET members     = #{groupInfo.members},
+            member_num  = #{groupInfo.memberNum},
+            update_time = #{groupInfo.updateTime}
+        WHERE gid = #{groupInfo.gid}
+    </update>
+
+    <!-- 逻辑删除群 -->
+    <update id="tombstonedByGid">
+        UPDATE group_info
+        SET is_deleted = 1
+        WHERE gid = #{gid}
+    </update>
+
+</mapper>

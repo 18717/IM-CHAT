@@ -1,7 +1,7 @@
 package com.li2n.im_server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.li2n.im_server.pojo.NoticeFriend;
+import com.li2n.im_server.entity.NoticeFriend;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -31,6 +31,7 @@ public interface NoticeFriendMapper extends BaseMapper<NoticeFriend> {
     /**
      * 更新好友通知
      * @param noticeFriend
+     * @param flagTime
      */
     void updateNotice(@Param("noticeFriend") NoticeFriend noticeFriend, @Param("flagTime")LocalDateTime flagTime);
 }

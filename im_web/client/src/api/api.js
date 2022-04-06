@@ -84,3 +84,9 @@ Date.prototype.format = function(fmt) {
     }
     return fmt;
 }
+
+// 将LocalDateTime格式的时间转换成 yyyy-MM-dd HH:mm:ss
+export const convertTime = (date) => {
+    var time = date.split('T');
+    return time[0] + " " + time[1];
+}

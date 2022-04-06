@@ -18,7 +18,6 @@
     </div>
     &nbsp;
     <div class="desc-info">
-
       <!-- 用户信息 -->
       <el-drawer
           v-if="chatType === 'private'"
@@ -87,7 +86,6 @@
         </div>
 
       </el-drawer>
-
       <!-- 群聊信息 -->
       <el-drawer
           v-if="chatType === 'public'"
@@ -100,7 +98,7 @@
         <div slot="title">
           <div style="display: inline-block; width: 60%">{{ currentGroup.groupName }}</div>
           <div style="display: inline-block; width: 30%; text-align: right">
-            <el-button v-if="currentGroup.masterUsername !== currentLogin.username" @click="quitGroup(currentGroup)"
+            <el-button v-if="currentGroup.leader !== currentLogin.username" @click="quitGroup(currentGroup)"
                        icon="el-icon-circle-close" size="mini"
                        style="background: none; border: 0;">退出群聊
             </el-button>
@@ -136,7 +134,7 @@
               <template slot="label">
                 群主
               </template>
-              {{ currentGroup.masterUsername }}
+              {{ currentGroup.user.nickname }}
             </el-descriptions-item>
             <el-descriptions-item>
               <template slot="label">
@@ -152,7 +150,7 @@
             </el-descriptions-item>
           </el-descriptions>
           <h5 style="margin: 10px 10px">成员列表</h5>
-          <el-descriptions v-if="currentGroup.masterUsername !== currentLogin.username" :column="1"
+          <el-descriptions v-if="currentGroup.leader !== currentLogin.username" :column="1"
                            class="group-member1"
                            size="small" border>
             <el-descriptions-item v-for="(member,index) in currentGroup.memberArr">
@@ -183,7 +181,6 @@
         </div>
 
       </el-drawer>
-
       <!-- 修改群聊信息 -->
       <el-dialog :visible.sync="dialogGroupForm"
                  v-if="currentGroup !== null"
@@ -252,7 +249,6 @@ export default {
   ]),
   methods: {
     delFriend(user) {
-      let th = this
       let message = '确定和好友 ' + user.nickname + ' 解除好友关系，是否继续？';
       this.$confirm(message, '提示', {
         confirmButtonText: '确定',
@@ -263,19 +259,18 @@ export default {
         this.postRequest('/friend/del?username=' + user.username)
             .then(resp => {
               let friendNotice = {};
-              friendNotice.avatarUrl = this.currentLogin.avatar;
-              friendNotice.sendNickname = this.currentLogin.nickname;
-              friendNotice.sendUsername = this.currentLogin.username;
-              friendNotice.receiveUsername = user.username;
+              friendNotice.sender = this.currentLogin.username;
+              friendNotice.receiver = user.username;
               friendNotice.title = "解除好友关系";
               friendNotice.flag = 1;
               friendNotice.del = 1;
-              friendNotice.businessType = 'del';
-              friendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+              friendNotice.add = 0;
+              friendNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
               this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendNotice));
               this.getRequest('/friend/list?username=' + this.currentLogin.username).then(friendList => {
                 this.$store.commit('INIT_FRIEND_LIST', friendList)
               })
+              this.$router.go(0)
             })
             .catch({});
       }).catch(() => {
@@ -295,21 +290,20 @@ export default {
           this.refreshGroupList();
           // 发送通知给群主;
           let notice = {};
-          notice.businessType = 'quit';
           notice.confirm = 1;
           notice.verified = 1;
           notice.quit = 1;
+          notice.join = 0;
+          notice.dismiss = 0;
+          notice.forceQuit = 0;
           notice.flag = 1;
           notice.title = "用户已退出群聊";
-          notice.avatarUrl = this.currentLogin.avatar;
-          notice.senderNickname = this.currentLogin.nickname;
-          notice.senderUsername = this.currentLogin.username;
-          notice.receiverUsername = this.currentGroup.masterUsername;
-          notice.groupName = this.currentGroup.groupName;
+          notice.sender = this.currentLogin.username;
+          notice.receiver = this.currentGroup.leader;
           notice.gid = this.currentGroup.gid;
-          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          notice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
           this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
-          this.$store.commit('removeCurrent')
+          this.$store.commit('removeCurrent');
           this.$router.go(0)
         })
       }).catch(() => {
@@ -330,19 +324,21 @@ export default {
           this.refreshGroupList();
           // 发送通知给用户
           let notice = {};
-          notice.businessType = 'forceQuit';
           notice.confirm = 1;
           notice.verified = 1;
+          notice.quit = 0;
+          notice.join = 0;
+          notice.dismiss = 0;
           notice.forceQuit = 1;
           notice.flag = 1;
           notice.title = "您已被移出群聊";
-          notice.avatarUrl = this.currentLogin.avatar;
-          notice.senderNickname = this.currentLogin.nickname;
-          notice.senderUsername = this.currentLogin.username;
-          notice.receiverUsername = username;
+          notice.avatar = this.currentLogin.avatar;
+          notice.nickname = this.currentLogin.nickname;
+          notice.sender = this.currentLogin.username;
+          notice.receiver = username;
           notice.groupName = this.currentGroup.groupName;
           notice.gid = this.currentGroup.gid;
-          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          notice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
           this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
           this.$router.go(0)
         })
@@ -364,16 +360,19 @@ export default {
           this.refreshGroupList();
           // 发送通知给用户
           let notice = {};
-          notice.businessType = 'dismiss';
-          notice.senderUsername = group.masterUsername;
+          notice.confirm = 1;
+          notice.verified = 1;
+          notice.quit = 0;
+          notice.join = 0;
+          notice.dismiss = 1;
+          notice.forceQuit = 0;
+          notice.flag = 1;
+          notice.sender = group.leader;
           notice.gid = group.gid;
           notice.groupName = group.groupName;
           notice.members = group.members;
           notice.title = "群聊已被群主解散";
-          notice.confirm = 1;
-          notice.verified = 1;
-          notice.flag = 1;
-          notice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+          notice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
           this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(notice));
           this.$router.go(0)
         })
@@ -386,7 +385,9 @@ export default {
     },
     editGroupInfo(groupInfo) {
       this.dialogGroupForm = false;
-      this.postRequest('/group/edit-info', groupInfo).then(resp => {
+      groupInfo.time = groupInfo.createTime;
+      groupInfo.createTime = null;
+      this.postRequest('/group/edit', groupInfo).then(resp => {
         this.refreshGroupList();
       })
     },

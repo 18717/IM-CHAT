@@ -62,7 +62,7 @@ export default {
 
       this.postRequest('/login/server', this.loginForm).then(resp => {
         if (resp) {
-          window.sessionStorage.setItem('token', resp.obj.tokenHead + resp.obj.token);
+          window.sessionStorage.setItem('token', resp.data.tokenHead + resp.data.token);
           let path = this.$route.query.redirect;
           this.$router.replace((path === '/' || path === undefined) ? '/home' : path);
         } else {
@@ -72,7 +72,7 @@ export default {
       this.loading = false;
     },
     updateCaptcha() {
-      this.captchaUrl = '/captcha/server/login?username=' + this.loginForm.username + '?time=' + new Date();
+      this.captchaUrl = '/captcha/server/login?username=' + this.loginForm.username + '?time' + new Date();
     },
 
   }

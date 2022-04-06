@@ -36,14 +36,12 @@
     <el-drawer
         title="修改个人信息"
         :visible.sync="dialog"
-        :before-close="handleClose"
         direction="rtl"
-        custom-class="demo-drawer"
         ref="drawer"
         :close-on-press-escape="true"
         size="37%"
     >
-      <div class="demo-drawer__content">
+      <div>
         <el-form :model="user" :rules="rules" ref="ruleForm" status-icon>
 
           <el-form-item label="头像" :label-width="formLabelWidth" style="height: 102px">
@@ -80,7 +78,7 @@
           </el-form-item>
 
         </el-form>
-        <div class="demo-drawer__footer">
+        <div>
           <el-row type="flex" justify="space-around">
             <el-col :span="9">
               <el-button style="width: 100%" @click="cancelForm">取 消</el-button>
@@ -98,6 +96,8 @@
 </template>
 
 <script>
+
+import {convertTime} from "../../../client/src/api/api";
 
 export default {
   name: "Space",
@@ -136,6 +136,8 @@ export default {
     refreshLoginInfo() {
       this.getRequest('/server/login/info').then(resp => {
         this.user = resp;
+        this.user.createTime = convertTime(resp.createTime);
+        this.user.updateTime = convertTime(resp.updateTime);
       })
     },
     // 判断用户上传头像的格式
@@ -155,30 +157,16 @@ export default {
     },
     // 上传头像
     uploadSuccess(response) {
-      this.user.avatar = response.obj;
+      this.user.avatar = response.data;
     },
     // 提交修改数据的表单
     submitEditInfo(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          if (this.loading) {
-            return;
-          }
-          this.$confirm('确定要提交表单吗？').then(_ => {
-            console.log(this.user)
-            this.loading = true;
-            this.timer = setTimeout(() => {
-              this.putRequest('/server/update/user', this.user).then(resp => {
-                this.refreshLoginInfo();
-              })
-              // 动画关闭需要一定的时间
-              setTimeout(() => {
-                this.loading = false;
-                this.dialog = false;
-              }, 400);
-            }, 1000);
-          }).catch(_ => {
-          });
+          this.putRequest('/server/update/user', this.user).then(resp => {
+            this.refreshLoginInfo();
+            this.dialog = false;
+          })
         } else {
           console.log('error submit!!');
           return false;

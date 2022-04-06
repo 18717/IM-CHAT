@@ -13,7 +13,6 @@
             <el-button type="text" @click="showUserInfo(currentUser)" icon="el-icon-more" size="mini"></el-button>
           </div>
         </div>
-
       </div>
       <div class="message-info scrollbar" v-scroll-bottom="msgList">
         <ul v-if="currentUser">
@@ -21,17 +20,16 @@
             <p class="time" style="text-align: center;margin: 15px 0">
               <span style="background-color: #dcdcdc;">{{ msg.sendTime }}</span>
             </p>
-
             <div v-if="msg.self !== 1" class="main no-self">
               <div style="height: 50%">
-                <img class="avatar" :src="msg.avatar" alt="">
+                <img class="avatar" :src="currentUser.avatar" alt="">
               </div>
               <div style="height: 50%">
-                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                <img v-if="msg.contentType === 'img'" :src="msg.fileUrl" alt=""
                      style="width: 100px; height: 100px; border-radius: 3px">
                 <div v-else class="text">
                   <span>{{ msg.content }}</span>
-                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                  <a v-if="msg.contentType === 'file'" :href="msg.fileUrl">
                     <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
                     </el-button>
                   </a>
@@ -43,11 +41,11 @@
                 <img class="avatar" :src="currentLogin.avatar" alt="">
               </div>
               <div style="height: 50%">
-                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                <img v-if="msg.contentType === 'img'" :src="msg.fileUrl" alt=""
                      style="width: 100px; height: 100px; border-radius: 3px">
                 <div v-else class="text">
-                  <div>{{ msg.content }}</div>
-                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                  <span>{{ msg.content }}</span>
+                  <a v-if="msg.contentType === 'file'" :href="msg.fileUrl">
                     <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
                     </el-button>
                   </a>
@@ -59,7 +57,7 @@
       </div>
     </div>
 
-    <div v-if="chatType === 'public'" class="chat-group">
+    <div v-else-if="chatType === 'public'" class="chat-group">
       <div v-if="currentGroup" class="message-header">
         <div class="username-div">
           <el-header><b>{{ currentGroup.groupName }}</b>( {{ currentGroup.memberNum }} )</el-header>
@@ -79,19 +77,19 @@
             <div v-if="msg.self !== 1" class="main no-self">
               <div style="height: 50%">
                 <img class="avatar" :src="msg.avatar" alt="">
-                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
-                  <span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                <p v-if="currentGroup.leader !== msg.sender" class="time">
+                  <span>{{ msg.nickname }}</span> <span>{{ msg.time }}</span>
                 </p>
                 <p v-else class="time">
-                  <span class="master-tag">群主</span><span>{{ msg.sendNickname }}</span> <span>{{ msg.sendTime }}</span>
+                  <span class="master-tag">群主</span><span>{{ msg.nickname }}</span> <span>{{ msg.time }}</span>
                 </p>
               </div>
               <div style="height: 50%">
-                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                <img v-if="msg.contentType === 'img'" :src="msg.fileUrl" alt=""
                      style="width: 100px; height: 100px; border-radius: 3px">
                 <div v-else class="text">
                   <span>{{ msg.content }}</span>
-                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                  <a v-if="msg.contentType === 'file'" :href="msg.fileUrl">
                     <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
                     </el-button>
                   </a>
@@ -101,19 +99,19 @@
             <div v-else class="main self">
               <div style="height: 50%">
                 <img class="avatar" :src="msg.avatar" alt="">
-                <p v-if="currentGroup.masterUsername !== msg.sendUsername" class="time">
-                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span>
+                <p v-if="currentGroup.leader !== msg.sender" class="time">
+                  <span>{{ msg.time }}</span><span>{{ msg.nickname }}</span>
                 </p>
                 <p v-else class="time">
-                  <span>{{ msg.sendTime }}</span><span>{{ msg.sendNickname }}</span> <span class="master-tag">群主</span>
+                  <span>{{ msg.time }}</span><span>{{ msg.nickname }}</span> <span class="master-tag">群主</span>
                 </p>
               </div>
               <div style="height: 50%">
-                <img v-if="msg.messageContentType === 'img'" :src="msg.fileUrl" alt=""
+                <img v-if="msg.contentType === 'img'" :src="msg.fileUrl" alt=""
                      style="width: 100px; height: 100px; border-radius: 3px">
                 <div v-else class="text">
                   <span>{{ msg.content }}</span>
-                  <a v-if="msg.messageContentType === 'file'" :href="msg.fileUrl">
+                  <a v-if="msg.contentType === 'file'" :href="msg.fileUrl">
                     <el-button size="mini" style="background: none; border: 0"><i class="el-icon-folder"></i>【点击下载】
                     </el-button>
                   </a>
@@ -123,6 +121,12 @@
           </li>
         </ul>
       </div>
+    </div>
+
+    <div v-else style="margin-top: 9%">
+      <!-- image="http://cdn.lrxya.icu/im_file/nodata.png" -->
+      <el-empty
+          description="请选择一个聊天对象"></el-empty>
     </div>
 
   </div>
@@ -146,10 +150,6 @@ export default {
     'currentGroup',
     'chatType',
   ]),
-  mounted() {
-    // this.initUser();
-    // this.refreshHistoryMsg();
-  },
   methods: {
 
     initUser() {
@@ -178,8 +178,8 @@ export default {
       return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     }
   },
-  directives: {/*这个是vue的自定义指令,官方文档有详细说明*/
-    // 发送消息后滚动到底部,这里无法使用原作者的方法，也未找到合理的方法解决，暂用setTimeout的方法模拟
+  directives: {
+    // 发送消息后滚动到底部,用setTimeout的方法模拟
     'scroll-bottom'(el) {
       //console.log(el.scrollTop);
       setTimeout(function () {

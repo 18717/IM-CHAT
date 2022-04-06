@@ -1,7 +1,7 @@
 package com.li2n.im_server.config;
 
 import com.li2n.im_server.config.security.JwtTokenUtil;
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.entity.User;
 import com.li2n.im_server.utils.RedisCache;
 import com.qiniu.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                             // 从redis中获取到用户信息
                             String redisKey = "login:" + username;
-                            UserInfo cacheUser = redisCache.getCacheObject(redisKey);
+                            User cacheUser = redisCache.getCacheObject(redisKey);
 
                             // 判断redis中是否存在该用户
                             if (Objects.isNull(cacheUser)) {

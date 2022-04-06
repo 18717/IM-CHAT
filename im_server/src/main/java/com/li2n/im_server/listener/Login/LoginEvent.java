@@ -1,6 +1,6 @@
 package com.li2n.im_server.listener.Login;
 
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.entity.User;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -13,18 +13,18 @@ public class LoginEvent extends ApplicationEvent {
 
     private static final long serialVersionUID = 1L;
 
-    private UserInfo user;
+    private User user;
 
-    public LoginEvent(Object source, UserInfo user) {
+    public LoginEvent(Object source, User user) {
         super(source);
         this.user = user;
     }
 
-    public UserInfo getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(UserInfo user) {
+    public void setUser(User user) {
         this.user = user;
     }
 

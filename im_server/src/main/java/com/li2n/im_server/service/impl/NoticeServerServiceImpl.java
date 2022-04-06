@@ -1,9 +1,9 @@
 package com.li2n.im_server.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.li2n.im_server.entity.NoticeServer;
+import com.li2n.im_server.entity.User;
 import com.li2n.im_server.mapper.NoticeServerMapper;
-import com.li2n.im_server.pojo.NoticeServer;
-import com.li2n.im_server.pojo.model.NoticeModel;
 import com.li2n.im_server.service.INoticeServerService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
@@ -27,6 +27,8 @@ public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, Not
 
     @Value("${im-redis-key.notice.server}")
     private String serverNoticeKey;
+    @Value("${im-redis-key.user}")
+    private String userKey;
 
     @Autowired
     private RedisCache redisCache;
@@ -50,29 +52,23 @@ public class NoticeServerServiceImpl extends ServiceImpl<NoticeServerMapper, Not
      * @return
      */
     @Override
-    public List<NoticeModel> selectByUsername(String username) {
+    public List<NoticeServer> selectByUsername(String username) {
         username = "," + username + ",";
-        List<NoticeModel> noticeModels = new ArrayList<>();
         List<NoticeServer> noticeServerList = noticeServerMapper.selectListByReceiveUsername(username);
         if (noticeServerList.isEmpty()) {
             return new ArrayList<>();
         }
         for (NoticeServer noticeServer : noticeServerList) {
-            NoticeModel model = new NoticeModel();
-            model.setTitle(noticeServer.getTitle());
-            model.setFileName(noticeServer.getFileName());
-            model.setFileUrl(noticeServer.getFileUrl());
-            model.setContent(noticeServer.getContent());
-            model.setPushNum(noticeServer.getPushNum());
-            model.setPushTime(TimeFormat.localDateTimeToString(noticeServer.getSendTime()));
-            noticeModels.add(model);
+            User sender = redisCache.getCacheObject(userKey + noticeServer.getSender());
+            noticeServer.setUser(sender);
+            noticeServer.setTime(TimeFormat.localDateTimeToString(noticeServer.getSendTime()));
         }
         String key = serverNoticeKey + username;
-        List<NoticeModel> cacheNoticeList = redisCache.getCacheList(key);
+        List<NoticeServer> cacheNoticeList = redisCache.getCacheList(key);
         if (!cacheNoticeList.isEmpty()) {
             redisCache.deleteObject(key);
         }
-        redisCache.setCacheList(key, noticeModels);
-        return noticeModels;
+        redisCache.setCacheList(key, noticeServerList);
+        return noticeServerList;
     }
 }

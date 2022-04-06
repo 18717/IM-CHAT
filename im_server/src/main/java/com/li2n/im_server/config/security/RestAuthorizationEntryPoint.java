@@ -1,7 +1,7 @@
 package com.li2n.im_server.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.li2n.im_server.pojo.model.RespBeanModel;
+import com.li2n.im_server.vo.ResponseResult;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class RestAuthorizationEntryPoint implements AuthenticationEntryPoint {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
-        RespBeanModel bean = RespBeanModel.error("未登录，请先登录!");
+        ResponseResult bean = ResponseResult.error("未登录，请先登录!");
         bean.setCode(401);
         out.write(new ObjectMapper().writeValueAsString(bean));
         out.flush();

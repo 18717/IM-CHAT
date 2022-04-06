@@ -7,7 +7,7 @@
 
     <!-- 功能列 -->
     <el-main class="chat-set-main scrollbar">
-      <el-collapse accordion>
+      <el-collapse >
         <el-collapse-item>
           <template slot="title">
             <i class="el-icon-edit-outline"></i> <span>服务器通知</span>
@@ -16,7 +16,7 @@
             <li v-for="notice in noticeList['server']" @click="showServerNotice(notice)">
               <el-col :span="12">{{ notice.title.substr(0, 7) }}</el-col>
               <el-col :span="12" style="text-align: right; padding-right: 10px">
-                <el-tag size="small">{{ notice.pushTime.substr(0, 10) }}</el-tag>
+                <el-tag size="small">{{ notice.time.substr(5, 5) }}</el-tag>
               </el-col>
             </li>
           </ul>
@@ -28,7 +28,7 @@
           <ul style="margin: 0; padding: 0">
             <li v-for="notice in noticeList['friend']" @click="showFriendNotice(notice)">
 
-              <el-col :span="18"><b>{{ notice.sendNickname }}</b> {{ notice.title.substr(0, 6) }}</el-col>
+              <el-col :span="18"><b>{{ notice.nickname }}</b> {{ notice.title.substr(0, 6) }}</el-col>
               <el-col :span="6" style="text-align: right; padding-right: 10px">
                 <el-tag size="small">{{ notice.sendTime.substr(5, 5) }}</el-tag>
               </el-col>
@@ -41,9 +41,9 @@
           </template>
           <ul style="margin: 0; padding: 0">
             <li v-for="notice in noticeList['group']" @click="showGroupNotice(notice)">
-              <el-col :span="18" v-if="notice.flag === null"><b>{{ notice.senderNickname }}</b> {{ notice.title }}</el-col>
+              <el-col :span="18" v-if="notice.flag === null"><b>{{ notice.nickname }}</b> {{ notice.title }}</el-col>
               <el-col :span="18" v-else>{{ notice.title }}</el-col>
-              <el-col :span="6"><el-tag size="small">{{ notice.sendTime.substr(5, 5) }}</el-tag></el-col>
+              <el-col :span="6"><el-tag size="small">{{ notice.time.substr(5, 5) }}</el-tag></el-col>
             </li>
           </ul>
         </el-collapse-item>
@@ -59,46 +59,13 @@
         :visible.sync="dialogFriendNotice"
         width="30%">
       <span slot="title">{{ noticeFriend.title }}</span>
-      <!-- 拒绝确认以及原因 -->
-      <el-dialog
-          class="friend-notice-dialog"
-          :show-close="false"
-          :visible.sync="dialogRefuseFriend"
-          append-to-body
-          width="30%">
-        <el-card class="friend-notice">
-          <el-row>
-            拒绝 <b>{{ noticeFriend.sendNickname }}</b> 的好友请求
-          </el-row>
-          <el-divider/>
-          <el-row>
-            <el-col :span="6">
-              <el-tag type="danger">拒绝原因</el-tag>
-            </el-col>
-            <el-col :span="18">
-              <el-input
-                  type="text"
-                  placeholder="(可忽略)"
-                  v-model="text"
-                  maxlength="15"
-                  show-word-limit
-              >
-              </el-input>
-            </el-col>
-          </el-row>
-        </el-card>
-        <span slot="footer">
-        <el-row type="flex" justify="center" :gutter="20">
-          <el-button type="danger" plain @click="refuseFriend()" style="border: 0; width: 100%">确定拒绝</el-button>
-        </el-row>
-      </span>
-      </el-dialog>
+
       <el-card class="friend-notice">
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeFriend.avatarUrl" alt=""></el-col>
+                                 :src="noticeFriend.avatar" :alt="noticeFriend.nickname"></el-col>
           <el-col :span="20">
-            <b>{{ noticeFriend.sendNickname }}</b> 请求添加你为好友，是否同意？
+            <b>{{ noticeFriend.nickname }}</b> 请求添加你为好友，是否同意？
           </el-col>
         </el-row>
         <el-divider/>
@@ -133,6 +100,41 @@
       <span slot="footer" v-else>
         <el-button type="danger" disabled plain style="width: 100%; border: 0">未知错误</el-button>
       </span>
+
+      <!-- 拒绝确认以及原因 -->
+      <el-dialog
+          class="friend-notice-dialog"
+          :show-close="false"
+          :visible.sync="dialogRefuseFriend"
+          append-to-body
+          width="30%">
+        <el-card class="friend-notice">
+          <el-row>
+            拒绝 <b>{{ noticeFriend.nickname }}</b> 的好友请求
+          </el-row>
+          <el-divider/>
+          <el-row>
+            <el-col :span="6">
+              <el-tag type="danger">拒绝原因</el-tag>
+            </el-col>
+            <el-col :span="18">
+              <el-input
+                  type="text"
+                  placeholder="(可忽略)"
+                  v-model="text"
+                  maxlength="15"
+                  show-word-limit
+              >
+              </el-input>
+            </el-col>
+          </el-row>
+        </el-card>
+        <span slot="footer">
+        <el-row type="flex" justify="center" :gutter="20">
+          <el-button type="danger" plain @click="refuseFriend()" style="border: 0; width: 100%">确定拒绝</el-button>
+        </el-row>
+      </span>
+      </el-dialog>
     </el-dialog>
     <!-- 好友反馈通知 -->
     <el-dialog
@@ -147,9 +149,9 @@
 
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeFriend.avatarUrl" alt=""></el-col>
+                                 :src="noticeFriend.avatar" alt=""></el-col>
           <el-col :span="20">
-            <b>{{ noticeFriend.sendNickname }}</b>
+            <b>{{ noticeFriend.nickname }}</b>&nbsp;
             <span v-if="noticeFriend.confirm === 0"> 已拒绝你的好友申请！</span>
             <span v-else>已同意你的好友申请！</span>
           </el-col>
@@ -172,9 +174,9 @@
       <el-card v-else-if="noticeFriend.del === 1 || noticeFriend.del === true" class="friend-notice">
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeFriend.avatarUrl" alt=""></el-col>
+                                 :src="noticeFriend.avatar" alt=""></el-col>
           <el-col :span="20">
-            <b>{{ noticeFriend.sendNickname }}</b> 已和您解除好友关系
+            <b>{{ noticeFriend.nickname }}</b> 已和您解除好友关系
           </el-col>
         </el-row>
         <el-divider/>
@@ -194,7 +196,8 @@
 
     <!-- 群通知 -->
     <el-dialog
-        v-if="noticeGroup.flag === null"
+        class="friend-notice-dialog"
+        v-if="noticeGroup.flag === 0 || noticeGroup.flag === false"
         :show-close="false"
         :visible.sync="dialogGroupNotice"
         width="30%">
@@ -202,9 +205,9 @@
       <el-card>
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeGroup.avatarUrl" alt=""></el-col>
+                                 :src="noticeGroup.avatar" alt=""></el-col>
           <el-col :span="20">
-            <b>{{ noticeGroup.senderNickname }}</b> 申请加入群聊，是否同意？
+            <b>{{ noticeGroup.nickname }}</b> 申请加入群聊，是否同意？
           </el-col>
         </el-row>
         <el-divider/>
@@ -230,10 +233,10 @@
           <el-col :span="6">
             <el-tag size="medium">申请日期</el-tag>
           </el-col>
-          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+          <el-col :span="18">{{ noticeGroup.time }}</el-col>
         </el-row>
       </el-card>
-      <span slot="footer" v-if="noticeGroup.verified === null">
+      <span slot="footer" v-if="noticeGroup.verified === 0 || noticeGroup.verified === false">
         <el-row type="flex" justify="center" :gutter="20">
           <el-col :span="12"><el-button type="danger" plain @click="dialogRefuseGroup = true"
                                         style="border: 0; width: 100%">拒 绝</el-button></el-col>
@@ -241,10 +244,10 @@
                                         style="border: 0; width: 100%">同 意</el-button></el-col>
         </el-row>
       </span>
-      <span slot="footer" v-else-if="noticeGroup.verified === 1">
-        <el-button v-if="noticeGroup.confirm === 1" type="primary" disabled plain
+      <span slot="footer" v-else-if="noticeGroup.verified === 1 || noticeGroup.verified === true">
+        <el-button v-if="noticeGroup.confirm === 1 || noticeGroup.confirm === true" type="primary" disabled plain
                    style="width: 100%; border: 0">已同意</el-button>
-        <el-button v-else-if="noticeGroup.confirm === 0" type="danger" disabled plain
+        <el-button v-else-if="noticeGroup.confirm === 0 || noticeGroup.confirm === false" type="danger" disabled plain
                    style="width: 100%; border: 0">已拒绝</el-button>
         <el-button v-else type="danger" disabled plain style="width: 100%; border: 0">未知错误</el-button>
       </span>
@@ -261,7 +264,7 @@
           width="30%">
         <el-card class="friend-notice">
           <el-row>
-            拒绝 <b>{{ noticeGroup.senderNickname }}</b> 的入群申请
+            拒绝 <b>{{ noticeGroup.nickname }}</b> 的入群申请
           </el-row>
           <el-divider/>
           <el-row>
@@ -290,6 +293,7 @@
     <!-- 群反馈通知 -->
     <el-dialog
         v-else
+        class="friend-notice-dialog"
         :show-close="false"
         :visible.sync="dialogGroupNotice"
         width="30%">
@@ -298,10 +302,10 @@
       <el-card v-if="noticeGroup.join === 1 || noticeGroup.join === true">
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeGroup.avatarUrl" alt=""></el-col>
+                                 :src="noticeGroup.avatar" alt=""></el-col>
           <el-col :span="20">
-            <b>{{ noticeGroup.senderNickname }}</b>
-            <span v-if="noticeGroup.confirm === 0">&nbsp;已拒绝你的入群申请！</span>
+            <b>{{ noticeGroup.nickname }}</b>
+            <span v-if="noticeGroup.confirm === 0 || noticeGroup.confirm === false">&nbsp;已拒绝你的入群申请！</span>
             <span v-else>&nbsp;已同意你的入群申请！</span>
           </el-col>
         </el-row>
@@ -312,7 +316,7 @@
           </el-col>
           <el-col :span="18">{{ noticeGroup.groupName }}</el-col>
         </el-row>
-        <el-row v-if="noticeGroup.confirm === 0">
+        <el-row v-if="noticeGroup.confirm === 0 || noticeGroup.confirm === false">
           <el-col :span="6">
             <el-tag size="medium">拒绝原因</el-tag>
           </el-col>
@@ -323,17 +327,16 @@
           <el-col :span="6">
             <el-tag size="medium">反馈日期</el-tag>
           </el-col>
-          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+          <el-col :span="18">{{ noticeGroup.time }}</el-col>
         </el-row>
       </el-card>
-
       <el-card v-else-if="noticeGroup.quit === 1 || noticeGroup.quit === true">
         <el-row>
           <el-col :span="4"><img style="width: 40px; height: 40px; border-radius: 3px"
-                                 :src="noticeGroup.avatarUrl" alt=""></el-col>
+                                 :src="noticeGroup.avatar" alt=""></el-col>
           <el-col :span="20">
             <span>用户&nbsp;</span>
-            <b>{{ noticeGroup.senderNickname }}</b>
+            <b>{{ noticeGroup.nickname }}</b>
             <span>&nbsp;已退出群聊</span>
           </el-col>
         </el-row>
@@ -348,10 +351,9 @@
           <el-col :span="6">
             <el-tag size="medium">日期</el-tag>
           </el-col>
-          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+          <el-col :span="18">{{ noticeGroup.time }}</el-col>
         </el-row>
       </el-card>
-
       <el-card v-else-if="noticeGroup.forceQuit === 1 || noticeGroup.forceQuit === true">
         <el-row>
           <el-col :span="20">
@@ -370,7 +372,7 @@
           <el-col :span="6">
             <el-tag size="medium">日期</el-tag>
           </el-col>
-          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+          <el-col :span="18">{{ noticeGroup.time }}</el-col>
         </el-row>
       </el-card>
 
@@ -391,7 +393,7 @@
           <el-col :span="6">
             <el-tag size="medium">日期</el-tag>
           </el-col>
-          <el-col :span="18">{{ noticeGroup.sendTime }}</el-col>
+          <el-col :span="18">{{ noticeGroup.time }}</el-col>
         </el-row>
       </el-card>
 
@@ -445,12 +447,10 @@ export default {
       this.noticeFriend = notice;
       if (notice.add === 1 || notice.add === true) {
         let user = this.currentLogin;
-        this.resultFriendNotice.sendUsername = user.username;
-        this.resultFriendNotice.sendNickname = user.nickname;
-        this.resultFriendNotice.receiveUsername = notice.sendUsername;
-        this.resultFriendNotice.avatarUrl = user.avatar;
+        this.resultFriendNotice.sender = user.username;
+        this.resultFriendNotice.receiver = notice.sender;
         this.resultFriendNotice.flagTime = notice.flagTime;
-        this.resultFriendNotice.businessType = 'add';
+        this.resultFriendNotice.add = 1;
       }
     },
     refuseFriend() {
@@ -466,9 +466,9 @@ export default {
       resultFriendNotice.add = 1;
       resultFriendNotice.title = '已拒绝申请';
       resultFriendNotice.content = this.text;
-      resultFriendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+      resultFriendNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(resultFriendNotice));
-      this.$message.error("已拒绝 " + resultFriendNotice.receiveUsername + "的好友请求")
+      this.$message.error("已拒绝 " + notice.nickname + "的好友请求")
       this.dialogFriendNotice = false;
     },
     consentFriend() {
@@ -481,76 +481,62 @@ export default {
       resultFriendNotice.result = true;
       resultFriendNotice.flag = 1;
       resultFriendNotice.title = '已同意申请';
-      resultFriendNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
+      resultFriendNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
       this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(resultFriendNotice));
-      this.$message.success("已同意 " + resultFriendNotice.receiveUsername + "的好友请求")
+      this.$message.success("已同意 " + notice.nickname + "的好友请求")
       this.getRequest('/friend/list?username=' + this.currentLogin.username).then(friendList => {
         this.$store.commit('INIT_FRIEND_LIST', friendList)
       })
       this.dialogFriendNotice = false;
     },
 
-
-
-
-
-
-
-
-
-
-
     showGroupNotice(notice) {
       this.noticeGroup = notice;
       if (notice.join) {
         let user = this.currentLogin;
-        this.resultGroupNotice.senderUsername = user.username;
-        this.resultGroupNotice.senderNickname = user.nickname;
-        this.resultGroupNotice.avatarUrl = user.avatar;
-        this.resultGroupNotice.receiverUsername = notice.senderUsername;
-        this.resultGroupNotice.receiverNickname = notice.senderNickname;
-        this.resultGroupNotice.flagTime = notice.flagTime;
+        this.resultGroupNotice.sender = user.username;
+        this.resultGroupNotice.receiver = notice.sender;
         this.resultGroupNotice.groupName = notice.groupName;
         this.resultGroupNotice.gid = notice.gid;
-        this.resultGroupNotice.businessType = 'join';
-        console.log(this.resultGroupNotice)
-      } else if (notice.quit) {
-
-      } else if (notice.forceQuit) {
-
+        this.resultGroupNotice.join = 1;
+        this.resultGroupNotice.quit = 0;
+        this.resultGroupNotice.forceQuit = 0;
+        this.resultGroupNotice.dismiss = 0;
       }
       this.dialogGroupNotice = true;
     },
     refuseGroup() {
       let notice = this.noticeGroup;
-      let resultGroupNotice = this.resultGroupNotice;
+      let groupNotice = this.resultGroupNotice;
       notice.confirm = 0;
       notice.verified = 1;
-      resultGroupNotice.confirm = 0;
-      resultGroupNotice.join = 1;
-      resultGroupNotice.verified = 1;
-      resultGroupNotice.flag = 0;
-      resultGroupNotice.title = "已拒绝你的入群申请";
-      resultGroupNotice.content = this.text;
-      resultGroupNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-      this.$message.error("已拒绝 " + resultGroupNotice.receiverNickname + " 的入群申请")
-      console.log(resultGroupNotice)
-      this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(resultGroupNotice));
+      groupNotice.result = 1;
+      groupNotice.confirm = 0;
+      groupNotice.verified = 1;
+      groupNotice.flag = 0;
+      groupNotice.flagTime = notice.flagTime;
+      groupNotice.title = "已拒绝你的入群申请";
+      groupNotice.content = this.text;
+      groupNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
+      this.$message.error("已拒绝 " + notice.nickname + " 的入群申请")
+      this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(groupNotice));
       this.dialogRefuseGroup = false;
     },
     consentGroup() {
       let notice = this.noticeGroup;
-      let resultGroupNotice = this.resultGroupNotice;
+      let groupNotice = this.resultGroupNotice;
       notice.confirm = 1;
       notice.verified = 1;
-      resultGroupNotice.confirm = 1;
-      resultGroupNotice.join = 1;
-      resultGroupNotice.verified = 1;
-      resultGroupNotice.flag = 1;
-      resultGroupNotice.title = "已同意你的入群申请";
-      resultGroupNotice.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-      this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(resultGroupNotice));
-      this.$message.success("已同意 " + resultGroupNotice.receiverNickname + " 的入群申请")
+      groupNotice.result = 1;
+      groupNotice.confirm = 1;
+      groupNotice.join = 1;
+      groupNotice.verified = 1;
+      groupNotice.flag = 0;
+      groupNotice.flagTime = notice.flagTime;
+      groupNotice.title = "已同意你的入群申请";
+      groupNotice.time = new Date().format("yyyy-MM-dd hh:mm:ss");
+      this.$store.state.stomp.send('/ws/group/send', {}, JSON.stringify(groupNotice));
+      this.$message.success("已同意 " + notice.nickname + " 的入群申请")
       this.getRequest('/group/list?username=' + this.currentLogin.username).then(groupList => {
         this.$store.commit('INIT_GROUP_LIST', groupList)
       })

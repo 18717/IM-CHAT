@@ -1,7 +1,7 @@
 package com.li2n.im_server.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.li2n.im_server.pojo.model.RespBeanModel;
+import com.li2n.im_server.vo.ResponseResult;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class RestfulAccessDeniedHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
-        RespBeanModel bean = RespBeanModel.error("权限不足，请联系管理员!");
+        ResponseResult bean = ResponseResult.error("权限不足，请联系管理员!");
         bean.setCode(403);
         out.write(new ObjectMapper().writeValueAsString(bean));
         out.flush();

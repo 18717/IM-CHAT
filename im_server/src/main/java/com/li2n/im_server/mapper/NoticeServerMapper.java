@@ -1,7 +1,7 @@
 package com.li2n.im_server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.li2n.im_server.pojo.NoticeServer;
+import com.li2n.im_server.entity.NoticeServer;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

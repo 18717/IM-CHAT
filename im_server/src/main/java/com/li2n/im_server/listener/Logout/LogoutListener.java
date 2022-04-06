@@ -1,6 +1,6 @@
 package com.li2n.im_server.listener.Logout;
 
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.entity.User;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class LogoutListener implements ApplicationListener<LogoutEvent> {
     @Override
     public void onApplicationEvent(LogoutEvent event) {
-        UserInfo user = event.getUser();
+        User user = event.getUser();
         System.out.println("系统提示：用户：[" + user.getNickname() + "] 已下线！");
     }
 }

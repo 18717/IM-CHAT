@@ -7,7 +7,7 @@
       <div class="text">
         <el-form ref="form" label-position="left" :model="infoData" label-width="80px">
           <el-form-item style="display: inline-block; width: 30%" label="推送对象">
-            <el-select v-model="infoData.push" @change="setReceiveUser" placeholder="请选择推送对象">
+            <el-select v-model="infoData.noticeType" @change="setReceiveUser" placeholder="请选择推送对象">
               <el-option label="指定用户（慎用，不友好体验）" value="checked"></el-option>
               <el-option label="全部用户" value="all"></el-option>
             </el-select>
@@ -15,7 +15,7 @@
           <el-form-item
               style="display: inline-block"
               label="选中用户"
-              v-if="infoData.push === 'checked'">
+              v-if="infoData.noticeType === 'checked'">
             <el-select
                 v-model="checkedUser"
                 @change="setReceiveUser"
@@ -71,11 +71,12 @@
 <script>
 import {mavonEditor} from "mavon-editor";
 import "mavon-editor/dist/css/index.css";
+import {Message} from "element-ui";
 
 export default {
   name: "Notice",
   head: {
-    title: "指定用户通知",
+    title: "推送消息",
     meta: [
       {name: 'description', content: '推送消息'}
     ]
@@ -85,37 +86,37 @@ export default {
       headers: {Authorization: window.sessionStorage.getItem('token')},
       // 上传文件参数
       param: {type: 'notice_file'},
-      infoData: {push: '', receiveUsername: '', title: '', fileUrl: '', content: '', fileName: ''},
+      infoData: {noticeType: '', sender: '', receiver: '', title: '', fileUrl: '', content: '', fileName: ''},
       userList: [],
       checkedUser: [],
+      user: {},
     }
   },
   mounted() {
-    this.initUsernames();
+    this.init();
   },
   methods: {
-    initUsernames() {
+    init() {
       this.getRequest('/server/get/usernames').then(resp => {
         this.userList = resp;
       })
+      this.user = JSON.parse(window.sessionStorage.getItem('login-user'));
     },
     setReceiveUser() {
       let usernames = "";
-      let userList;
-      let i;
-      if (this.infoData.push === 'all') {
-        this.infoData.receiveUsername = 'all';
+      if (this.infoData.noticeType === 'all') {
+        this.infoData.receiver = 'all';
       } else {
-        userList = this.checkedUser;
+        let userList = this.checkedUser;
         usernames = "," + userList[0] + ",";
-        for (i = 1; i < userList.length; i++) {
+        for (let i = 1; i < userList.length; i++) {
           usernames = usernames + userList[i] + ",";
         }
-        this.infoData.receiveUsername = usernames;
+        this.infoData.receiver = usernames;
       }
     },
     uploadSuccess(response) {
-      this.infoData.fileUrl = response.obj;
+      this.infoData.fileUrl = response.data;
     },
     beforeAvatarUpload(file) {
       const isLt5M = file.size / 1024 / 1024 < 5;
@@ -127,24 +128,26 @@ export default {
       return isLt5M;
     },
     sendNotice() {
-      if (this.infoData.push === '') {
-        this.$message.error('请选择推送对象');
-      } else if (this.infoData.push === 'checked' || this.infoData.push === 'all') {
-        if (this.infoData.receiveUsername === '') {
-          this.$message.error('请选择接收的用户');
-        } else if (this.infoData.title === '') {
-          this.$message.error("请输入标题！")
-        } else if (this.infoData.content === '') {
-          this.$message.error("请输入内容！")
+      var noticeServer = this.infoData;
+      if (noticeServer.noticeType === '') {
+        Message.error('请选择推送对象');
+      } else if (noticeServer.noticeType === 'checked' || noticeServer.noticeType === 'all') {
+        if (noticeServer.receiver === '') {
+          Message.error('请选择接收的用户');
+        } else if (noticeServer.title === '') {
+          Message.error("请输入标题！")
+        } else if (noticeServer.content === '') {
+          Message.error("请输入内容！")
         } else {
-          this.infoData.pushTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-          this.$store.state.stomp.send('/ws/server/notice', {}, JSON.stringify(this.infoData));
-          this.$message.success('推送成功！');
-          this.infoData = {push: '', receiveUsername: '', title: '', fileUrl: '', content: '', fileName: ''};
-          this.checkedUser = [];
+          noticeServer.sender = this.user.username;
+          noticeServer.time = new Date().format("yyyy-MM-dd hh:mm:ss");
+          this.$store.state.stomp.send('/ws/server/notice', {}, JSON.stringify(noticeServer));
+          Message.success('推送成功！');
+          this.infoData = {};
+          this.clearFile();
         }
       } else {
-        this.$message.error("非法参数！")
+        Message.error("非法参数！")
       }
     },
     clearFile() {

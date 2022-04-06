@@ -1,7 +1,7 @@
 package com.li2n.im_server.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.li2n.im_server.pojo.GroupList;
+import com.li2n.im_server.entity.GroupList;
 
 import java.util.List;
 
