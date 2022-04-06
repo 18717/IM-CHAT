@@ -1,6 +1,6 @@
 package com.li2n.im_server.config.security;
 
-import com.li2n.im_server.service.IUserInfoService;
+import com.li2n.im_server.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private IUserInfoService userService;
+    private IUserService userService;
     /**
      * 用户未登录
      */

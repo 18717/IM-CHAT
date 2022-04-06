@@ -1,12 +1,11 @@
 <template>
   <div id="list">
-    <!-- 搜索框 -->
+    <!-- 头部 -->
     <el-header class="chat-friendsList-header">
-      <el-input placeholder="搜索" v-model="search" clearable prefix-icon="el-icon-search" size="mini"
-                @input="searchList"
-                style="width: 170px; padding-right: 5px">
-      </el-input>
-      <el-button size="mini" @click="dialogVisible = true">搜索用户</el-button>
+      <div style="width: 60%; display: inline-block"><h5><i class="el-icon-user"></i>&emsp; 好友列表</h5></div>
+      <div style="width: 40%; display: inline-block">
+        <el-button size="mini" type="primary" plain @click="dialogVisible = true" style="border: 0">搜索用户</el-button>
+      </div>
     </el-header>
     <!-- 好友列表 -->
     <el-main class="chat-friendsList-main scrollbar">
@@ -72,7 +71,7 @@
               <div>注册时间：{{ user.createTime }}</div>
               <div>在线状态：
                 <el-tag size="small" :type="user.login ? 'success' : 'danger'">
-                  {{user.login ? '在线' : '离线' }}
+                  {{ user.login ? '在线' : '离线' }}
                 </el-tag>
               </div>
 
@@ -131,12 +130,8 @@ export default {
     // 初始化登录信息
     initUser() {
       this.getRequest('/client/login/info').then(resp => {
-        this.loginInfo = resp;
+        this.loginInfo = resp.data;
       })
-    },
-    refreshFriendList() {
-      console.log("刷新列表")
-      // this.friendList = JSON.parse(window.sessionStorage.getItem('friend-list'));
     },
     // 发送好友请求
     sendFriendRequest(user) {
@@ -146,16 +141,15 @@ export default {
         cancelButtonText: '取消',
       }).then(({value}) => {
         // 发送好友请求
-        friendParams.avatarUrl = this.loginInfo.avatar;
-        friendParams.sendNickname = this.loginInfo.nickname;
-        friendParams.sendUsername = this.loginInfo.username;
-        friendParams.receiveUsername = user.username;
-        friendParams.flag = 0;
-        friendParams.verified = 0;
+        friendParams.sender = this.loginInfo.username;
+        friendParams.receiver = user.username;
         friendParams.title = "好友申请";
         friendParams.content = value;
-        friendParams.sendTime = new Date().format("yyyy-MM-dd hh:mm:ss");
-        friendParams.businessType = 'add';
+        friendParams.add = 1;
+        friendParams.flag = 0;
+        friendParams.verified = 0;
+        friendParams.time = new Date().format("yyyy-MM-dd hh:mm:ss");
+        // friendParams.businessType = 'add';
         this.$store.state.stomp.send('/ws/friend/send', {}, JSON.stringify(friendParams));
         this.$message({
           type: 'success',
@@ -168,11 +162,6 @@ export default {
         });
       });
     },
-    // 好友列表搜索
-    searchList() {
-      // TODO 留个坑
-      console.log(this.search)
-    },
     // 关闭搜索框调用
     handleClose(done) {
       done();
@@ -181,14 +170,17 @@ export default {
     },
     // 搜索
     doSearch(params) {
+      var check = new RegExp("[\u4e00-\u9fa5]");
       if (params === 'search') {
         if (this.query.content == null) {
           Message.error("请输入搜索关键字")
-        } else {
+        } else if ((this.query.condition === 'uid' && !check.test(this.query.content)) || this.query.condition !== 'uid') {
           this.getRequest('/client/search/page?currentPage=' + this.currentPage + '&size=' + this.pageSize + '&' + this.query.condition + '=' + this.query.content).then(resp => {
             this.data = resp.data;
             this.total = resp.total;
           })
+        } else {
+          Message.error("UID不能含有中文");
         }
       } else if (params === 'clear') {
         this.data = null;
@@ -216,11 +208,20 @@ export default {
 </script>
 
 <style>
+
+h5 {
+  padding: 0;
+  margin: 0;
+}
+
 .chat-friendsList-header {
   height: 60px;
-  line-height: 60px;
   border-right: 1px rgba(89, 89, 89, 0.3) solid;
-  padding-right: 5px;
+  border-radius: 3px;
+  margin-left: 20px;
+  padding: 25px 0 0;
+  text-align: left;
+  line-height: 60px;
 }
 
 .user-container {

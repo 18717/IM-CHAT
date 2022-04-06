@@ -1,8 +1,9 @@
 package com.li2n.im_server.controller;
 
-import com.li2n.im_server.pojo.MessageTotal;
-import com.li2n.im_server.pojo.model.MessageModel;
-import com.li2n.im_server.service.IMessageTotalService;
+import com.li2n.im_server.entity.GroupMessage;
+import com.li2n.im_server.entity.Message;
+import com.li2n.im_server.service.IGroupMessageService;
+import com.li2n.im_server.service.IMessageService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 消息 前端控制器
@@ -22,12 +24,21 @@ import java.util.List;
 public class MessageController {
 
     @Autowired
-    private IMessageTotalService msgService;
+    private IMessageService msgService;
 
-    @ApiOperation(value = "获得有关登录用户所有的消息记录")
-    @GetMapping("/history/username")
-    public List<MessageTotal> getLoginUserHistoryMsg(String username) {
+    @Autowired
+    private IGroupMessageService messageGroupService;
+
+    @ApiOperation(value = "获取好友消息记录")
+    @GetMapping("/friend")
+    public List<Message> userHistoryMessage(String username) {
         return msgService.selectByUsername(username);
+    }
+
+    @ApiOperation(value = "获取群消息记录")
+    @GetMapping("/group")
+    public Map<String, List<GroupMessage>> groupHistoryMessage(String username) {
+        return messageGroupService.msgListByUsername(username);
     }
 
 }

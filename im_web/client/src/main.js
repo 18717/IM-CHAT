@@ -27,7 +27,7 @@ router.beforeEach(((to, from, next) => {
     if (window.sessionStorage.getItem('token') != null) {
         next();
     } else {
-        if (to.path === '/' || to.path === '/reg' || to.path === '/forget') {
+        if (to.path === '/' || to.path === '/login' || to.path === '/reg' || to.path === '/forget') {
             next();
         } else {
             Message.error('非常抱歉，请先登录！');

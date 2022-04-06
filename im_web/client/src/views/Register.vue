@@ -183,7 +183,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.postRequest('/client/register', this.regInfo).then(resp => {
-            this.regOkInfo = resp.obj;
+            this.regOkInfo = resp.data;
           })
         } else {
           console.log('error submit!!');
@@ -212,7 +212,7 @@ export default {
       if (response.code !== 200) {
         Message.error(response.message)
       } else {
-        this.regInfo.avatar = response.obj;
+        this.regInfo.avatar = response.data;
       }
     },
     // 重置

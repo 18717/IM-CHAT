@@ -3,30 +3,46 @@
 <mapper namespace="com.li2n.im_server.mapper.NoticeServerMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeServer">
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.NoticeServer">
         <id column="id" property="id"/>
         <result column="title" property="title"/>
         <result column="notice_type" property="noticeType"/>
-        <result column="send_username" property="sendUsername"/>
+        <result column="sender" property="sender"/>
+        <result column="receiver" property="receiver"/>
         <result column="file_name" property="fileName"/>
         <result column="file_url" property="fileUrl"/>
         <result column="content" property="content"/>
-        <result column="content_type" property="contentType"/>
-        <result column="receive_username" property="receiveUsername"/>
         <result column="push_num" property="pushNum"/>
         <result column="send_time" property="sendTime"/>
     </resultMap>
 
+    <resultMap id="UserWithNoticeServerResultMap" type="com.li2n.im_server.entity.NoticeServer" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="user" ofType="com.li2n.im_server.entity.User">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+            <result column="email" property="email"/>
+        </collection>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, title, notice_type, send_username, file_name, file_url, content, content_type, receive_username, push_num, send_time
+        id, title, notice_type, sender, receiver, file_name, file_url, content, push_num, send_time
     </sql>
 
-    <select id="selectListByReceiveUsername" resultMap="BaseResultMap">
-        SELECT *
-        FROM notice_server
+    <select id="selectListByReceiveUsername" resultMap="UserWithNoticeServerResultMap">
+        SELECT notice_server.*,
+               user.nickname,
+               user.avatar,
+               user.email,
+               user.gender
+        FROM notice_server,
+             user
         WHERE notice_type = 'all'
-           OR LOCATE(#{username}, receive_username)
+            AND notice_server.sender = user.username
+           OR LOCATE(#{username}, receiver)
+        ORDER BY notice_server.send_time
     </select>
 
 </mapper>

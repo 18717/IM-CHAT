@@ -1,7 +1,7 @@
 package com.li2n.im_server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.li2n.im_server.pojo.MessageGroup;
+import com.li2n.im_server.entity.GroupMessage;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -18,12 +18,12 @@ import java.util.List;
  */
 @Mapper
 @Repository
-public interface MessageGroupMapper extends BaseMapper<MessageGroup> {
+public interface MessageGroupMapper extends BaseMapper<GroupMessage> {
 
     /**
      * 获取群聊天记录
      * @param gid
      * @return
      */
-    List<MessageGroup> msgListByGid(@Param("gid") String gid);
+    List<GroupMessage> msgListByGid(@Param("gid") String gid);
 }

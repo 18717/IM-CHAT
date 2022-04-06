@@ -2,8 +2,8 @@ package com.li2n.im_server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.li2n.im_server.entity.NoticeGroup;
 import com.li2n.im_server.mapper.NoticeGroupMapper;
-import com.li2n.im_server.pojo.NoticeGroup;
 import com.li2n.im_server.service.INoticeGroupService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
@@ -42,13 +42,13 @@ public class NoticeGroupServiceImpl extends ServiceImpl<NoticeGroupMapper, Notic
     @Override
     public List<NoticeGroup> selectByUsername(String username) {
         List<NoticeGroup> noticeGroups = new ArrayList<>();
-        // 需要联表查询
+
         List<NoticeGroup> noticeGroupList =  noticeGroupMapper.selectListByReceiveUsername(username);
         if (noticeGroupList.isEmpty()) {
             return new ArrayList<>();
         }
         for (NoticeGroup noticeGroup : noticeGroupList) {
-            noticeGroup.setSendTime(TimeFormat.localDateTimeToString(noticeGroup.getCreateTime()));
+            noticeGroup.setTime(TimeFormat.localDateTimeToString(noticeGroup.getCreateTime()));
             noticeGroups.add(noticeGroup);
         }
         String key = groupNoticeKey + "," + username + ",";
@@ -78,7 +78,7 @@ public class NoticeGroupServiceImpl extends ServiceImpl<NoticeGroupMapper, Notic
     @Override
     public void updateNoticeGroup(NoticeGroup noticeGroup) {
         noticeGroupMapper.updateNotice(noticeGroup, TimeFormat.stringToLocalDateTime(noticeGroup.getFlagTime()));
-        selectByUsername(noticeGroup.getSenderUsername());
+        selectByUsername(noticeGroup.getSender());
     }
 
     /**

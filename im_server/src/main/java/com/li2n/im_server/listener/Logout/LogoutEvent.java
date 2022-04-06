@@ -1,6 +1,6 @@
 package com.li2n.im_server.listener.Logout;
 
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.entity.User;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -12,18 +12,18 @@ public class LogoutEvent extends ApplicationEvent {
 
     private static final long serialVersionUID = 1L;
 
-    private UserInfo user;
+    private User user;
 
-    public LogoutEvent(Object source, UserInfo user) {
+    public LogoutEvent(Object source, User user) {
         super(source);
         this.user = user;
     }
 
-    public UserInfo getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(UserInfo user) {
+    public void setUser(User user) {
         this.user = user;
     }
 }

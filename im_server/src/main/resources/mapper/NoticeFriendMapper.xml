@@ -3,34 +3,31 @@
 <mapper namespace="com.li2n.im_server.mapper.NoticeFriendMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeFriend">
-        <id column="id" property="id"/>
-        <result column="avatar_url" property="avatarUrl"/>
-        <result column="send_nickname" property="sendNickname"/>
-        <result column="send_username" property="sendUsername"/>
-        <result column="receive_username" property="receiveUsername"/>
-        <result column="title" property="title"/>
-        <result column="content" property="content"/>
-        <result column="is_confirm" property="confirm"/>
-        <result column="is_add" property="add"/>
-        <result column="is_del" property="del"/>
-        <result column="is_online" property="online"/>
-        <result column="create_time" property="createTime"/>
-        <result column="update_time" property="updateTime"/>
-        <result column="is_verified" property="verified"/>
-        <result column="is_flag" property="flag"/>
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.NoticeFriend">
+        <id column="id" property="id" />
+        <result column="sender" property="sender" />
+        <result column="receiver" property="receiver" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="is_confirm" property="confirm" />
+        <result column="is_add" property="add" />
+        <result column="is_del" property="del" />
+        <result column="is_verified" property="verified" />
+        <result column="is_flag" property="flag" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, avatar_url, send_nickname, send_username, receive_username, title, content, is_confirm, is_add, is_del, is_online, create_time,update_time, is_verified, is_flag
+        id, sender, receiver, title, content, is_confirm, is_add, is_del, is_verified, is_flag, create_time, update_time
     </sql>
 
     <!-- 获取用户的所有好友通知 -->
     <select id="selectListByReceiveUsername" resultMap="BaseResultMap">
         SELECT *
         FROM notice_friend
-        WHERE receive_username = #{username}
+        WHERE receiver = #{username}
     </select>
 
     <!-- 更新好友通知 -->
@@ -39,8 +36,8 @@
         SET is_confirm  = #{noticeFriend.confirm},
             is_verified = #{noticeFriend.verified},
             update_time = #{noticeFriend.updateTime}
-        WHERE send_username = #{noticeFriend.receiveUsername}
-          AND receive_username = #{noticeFriend.sendUsername}
+        WHERE sender = #{noticeFriend.receiver}
+          AND receiver = #{noticeFriend.sender}
           AND create_time = #{flagTime}
           AND is_add = 1
     </update>

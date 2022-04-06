@@ -20,7 +20,7 @@
             <span><i class="el-icon-chat-dot-round"></i>系统通知</span>
           </el-menu-item>
           <el-menu-item index="/setting">
-            <span><i class="el-icon-setting"></i>设置</span>
+            <span><i class="el-icon-menu"></i>个人中心</span>
           </el-menu-item>
 
         </el-menu>
@@ -46,7 +46,7 @@ export default {
   methods: {
     initLoginInfo() {
       this.getRequest('/client/login/info').then(resp => {
-        this.loginInfo = resp;
+        this.loginInfo = resp.data;
       })
     }
   }

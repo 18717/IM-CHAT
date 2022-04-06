@@ -3,54 +3,54 @@
 <mapper namespace="com.li2n.im_server.mapper.NoticeGroupMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.NoticeGroup">
-        <id column="id" property="id"/>
-        <result column="receiver_nickname" property="receiverNickname"/>
-        <result column="sender_username" property="senderUsername"/>
-        <result column="title" property="title"/>
-        <result column="content" property="content"/>
-        <result column="gid" property="gid"/>
-        <result column="is_confirm" property="confirm"/>
-        <result column="is_join" property="join"/>
-        <result column="is_quit" property="quit"/>
-        <result column="is_force_quit" property="forceQuit"/>
-        <result column="is_online" property="online"/>
-        <result column="is_verified" property="verified"/>
-        <result column="is_flag" property="flag"/>
-        <result column="create_time" property="createTime"/>
-        <result column="update_time" property="updateTime"/>
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.NoticeGroup">
+        <id column="id" property="id" />
+        <result column="sender" property="sender" />
+        <result column="receiver" property="receiver" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="gid" property="gid" />
+        <result column="is_confirm" property="confirm" />
+        <result column="is_join" property="join" />
+        <result column="is_quit" property="quit" />
+        <result column="is_force_quit" property="forceQuit" />
+        <result column="is_dismiss" property="dismiss" />
+        <result column="is_verified" property="verified" />
+        <result column="is_flag" property="flag" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
-    <resultMap id="UserWithNoticeGroupResultMap" type="com.li2n.im_server.pojo.NoticeGroup" extends="BaseResultMap">
+    <resultMap id="UserWithNoticeGroupResultMap" type="com.li2n.im_server.entity.NoticeGroup" extends="BaseResultMap">
         <!-- 用户信息表 -->
-        <collection property="userInfo" ofType="com.li2n.im_server.pojo.UserInfo">
+        <collection property="user" ofType="com.li2n.im_server.entity.User">
             <result column="avatar" property="avatar"/>
             <result column="nickname" property="nickname"/>
             <result column="gender" property="gender"/>
             <result column="email" property="email"/>
         </collection>
-        <collection property="groupInfo" ofType="com.li2n.im_server.pojo.GroupInfo">
+        <collection property="groupInfo" ofType="com.li2n.im_server.entity.GroupInfo">
             <result column="group_name" property="groupName"/>
         </collection>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, sender_username, title, content, gid, is_confirm, is_join, is_quit, is_force_quit, is_online, is_verified, is_flag, create_time, update_time
+        id, sender, receiver, title, content, gid, is_confirm, is_join, is_quit, is_force_quit, is_dismiss, is_verified, is_flag, create_time, update_time
     </sql>
 
     <!-- 根据用户名查询群通知（联表查询） -->
     <select id="selectListByReceiveUsername" resultMap="UserWithNoticeGroupResultMap">
         SELECT notice_group.*,
-               user_info.avatar,
-               user_info.nickname,
-               user_info.gender,
+               user.avatar,
+               user.nickname,
+               user.gender,
                group_info.group_name
         FROM notice_group,
-             user_info,
+             user,
              group_info
-        WHERE notice_group.receiver_username = #{username}
-          AND user_info.username = notice_group.sender_username
+        WHERE notice_group.receiver = #{username}
+          AND user.username = notice_group.sender
           AND notice_group.gid = group_info.gid
     </select>
 
@@ -60,8 +60,8 @@
         SET is_confirm  = #{noticeGroup.confirm},
             is_verified = #{noticeGroup.verified},
             update_time = #{noticeGroup.updateTime}
-        WHERE sender_username = #{noticeGroup.receiverUsername}
-          AND receiver_username = #{noticeGroup.senderUsername}
+        WHERE sender = #{noticeGroup.receiver}
+          AND receiver = #{noticeGroup.sender}
           AND create_time = #{flagTime}
           AND is_join = 1
     </update>

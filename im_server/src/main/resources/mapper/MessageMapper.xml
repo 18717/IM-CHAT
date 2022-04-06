@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.li2n.im_server.mapper.MessageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.Message">
+        <id column="id" property="id" />
+        <result column="mkey" property="mkey" />
+        <result column="sender" property="sender" />
+        <result column="receiver" property="receiver" />
+        <result column="content_type" property="contentType" />
+        <result column="content" property="content" />
+        <result column="file_url" property="fileUrl" />
+        <result column="send_time" property="sendTime" />
+        <result column="is_self" property="self" />
+    </resultMap>
+
+    <resultMap id="UserWithMsgTotalResultMap" type="com.li2n.im_server.entity.Message" extends="BaseResultMap">
+        <!-- 用户信息表 -->
+        <collection property="user" ofType="com.li2n.im_server.entity.User">
+            <result column="avatar" property="avatar"/>
+            <result column="nickname" property="nickname"/>
+            <result column="gender" property="gender"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, mkey, sender, receiver, content_type, content, file_url, send_time, is_self
+    </sql>
+
+    <!-- 根据msgKey查询指定聊天记录 -->
+    <select id="selectByMsgKey" resultMap="BaseResultMap">
+        SELECT *
+        FROM message msg
+        WHERE msg.mkey = #{sender}
+           OR msg.mkey = #{receiver}
+        ORDER BY id
+    </select>
+
+    <!-- 查询所有的聊天记录 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT *
+        FROM message
+        ORDER BY id
+    </select>
+
+    <!-- 查询有关用户所有的消息记录 -->
+    <select id="selectByUsername" resultMap="UserWithMsgTotalResultMap">
+        SELECT
+            message.*,
+            user.avatar,
+            user.nickname,
+            user.gender
+        FROM
+            message,
+            user
+        WHERE
+            ( message.sender = #{username} AND user.username = message.receiver )
+           OR ( message.receiver = #{username} AND user.username = message.sender )
+        ORDER BY
+            message.send_time
+    </select>
+
+</mapper>

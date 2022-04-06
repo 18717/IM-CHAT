@@ -1,12 +1,11 @@
 package com.li2n.im_server.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.li2n.im_server.entity.NoticeFriend;
+import com.li2n.im_server.entity.User;
 import com.li2n.im_server.mapper.NoticeFriendMapper;
-import com.li2n.im_server.pojo.NoticeFriend;
-import com.li2n.im_server.pojo.NoticeServer;
-import com.li2n.im_server.pojo.model.FriendModel;
-import com.li2n.im_server.pojo.model.NoticeModel;
 import com.li2n.im_server.service.INoticeFriendService;
+import com.li2n.im_server.service.IUserService;
 import com.li2n.im_server.utils.RedisCache;
 import com.li2n.im_server.utils.TimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,13 @@ public class NoticeFriendServiceImpl extends ServiceImpl<NoticeFriendMapper, Not
 
     @Value("${im-redis-key.notice.friend}")
     private String friendNoticeKey;
+    @Value("${im-redis-key.user}")
+    private String userKey;
 
     @Autowired
     private NoticeFriendMapper noticeFriendMapper;
+    @Autowired
+    private IUserService userService;
     @Autowired
     private RedisCache redisCache;
 
@@ -60,9 +63,14 @@ public class NoticeFriendServiceImpl extends ServiceImpl<NoticeFriendMapper, Not
         if (noticeServerList.isEmpty()) {
             return new ArrayList<>();
         }
-        for (NoticeFriend noticeServer : noticeServerList) {
-            noticeServer.setSendTime(TimeFormat.localDateTimeToString(noticeServer.getCreateTime()));
-            noticeFriends.add(noticeServer);
+        for (NoticeFriend noticeFriend : noticeServerList) {
+            noticeFriend.setTime(TimeFormat.localDateTimeToString(noticeFriend.getCreateTime()));
+            if (redisCache.getCacheObject(userKey) == null) {
+                userService.updateRedisUser();
+            }
+            User user = redisCache.getCacheObject(userKey + noticeFriend.getSender());
+            noticeFriend.setUser(user);
+            noticeFriends.add(noticeFriend);
         }
         String key = friendNoticeKey + "," + username + ",";
         List<NoticeFriend> cacheNoticeList = redisCache.getCacheList(key);
@@ -81,6 +89,6 @@ public class NoticeFriendServiceImpl extends ServiceImpl<NoticeFriendMapper, Not
     @Override
     public void updateNoticeFriend(NoticeFriend noticeFriend) {
         noticeFriendMapper.updateNotice(noticeFriend, TimeFormat.stringToLocalDateTime(noticeFriend.getFlagTime()));
-        selectByUsername(noticeFriend.getSendUsername());
+        selectByUsername(noticeFriend.getSender());
     }
 }

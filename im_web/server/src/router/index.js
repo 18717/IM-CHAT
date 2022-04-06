@@ -3,12 +3,8 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from "@/views/Login";
 import Space from "@/views/Space";
-import Welcome from "@/views/Welcome";
-import ListUser from "@/views/user/ListUser";
-import InsetUser from "@/views/user/InsetUser";
-import WatchLog from "@/views/log/WatchLog";
-import DownLoadLog from "@/views/log/DownLoadLog";
-import ServerSwitch from "@/views/sys/ServerSwitch";
+import ListUser from "@/views/ListUser";
+import InsetUser from "@/views/InsetUser";
 import Notice from "@/views/Notice";
 
 Vue.use(VueRouter)
@@ -45,14 +41,11 @@ const routes = [
     name: '首页',
     component: Home,
     children: [
-      {path: "/home", name: "欢迎页", component: Welcome},
+      {path: "/home", name: "首页", component: Space},
       {path: "/space", name: "个人中心", component: Space},
       {path: "/notice", name: "系统通知", component: Notice},
       {path: "/list", name: "用户列表", component: ListUser},
       {path: "/new-user", name: "添加用户", component: InsetUser},
-      {path: "/watch-log", name: "查看日志", component: WatchLog},
-      {path: "/download-log", name: "下载日志", component: DownLoadLog},
-      {path: "/server-switch", name: "服务器开关", component: ServerSwitch},
     ]
   },
 ]

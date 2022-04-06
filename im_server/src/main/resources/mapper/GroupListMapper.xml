@@ -3,15 +3,15 @@
 <mapper namespace="com.li2n.im_server.mapper.GroupListMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.li2n.im_server.pojo.GroupList">
-        <id column="id" property="id"/>
-        <result column="username" property="username"/>
-        <result column="gids" property="gids"/>
-        <result column="found_num" property="foundNum"/>
-        <result column="join_num" property="joinNum"/>
-        <result column="total_num" property="totalNum"/>
-        <result column="create_time" property="createTime"/>
-        <result column="update_time" property="updateTime"/>
+    <resultMap id="BaseResultMap" type="com.li2n.im_server.entity.GroupList">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="gids" property="gids" />
+        <result column="found_num" property="foundNum" />
+        <result column="join_num" property="joinNum" />
+        <result column="total_num" property="totalNum" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 通用查询结果列 -->

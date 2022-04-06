@@ -1,15 +1,14 @@
 package com.li2n.im_server.controller;
 
-import com.li2n.im_server.pojo.UserInfo;
-import com.li2n.im_server.pojo.model.*;
-import com.li2n.im_server.service.IUserInfoService;
+import com.li2n.im_server.entity.User;
+import com.li2n.im_server.service.IUserService;
 import com.li2n.im_server.utils.RedisCache;
+import com.li2n.im_server.vo.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
 
@@ -27,58 +26,62 @@ public class ClientController {
     private String clientLoginKey;
 
     @Autowired
-    private IUserInfoService userService;
+    private IUserService userService;
     @Autowired
     private RedisCache redisCache;
 
     @ApiOperation(value = "当前登录用户信息")
     @GetMapping("/login/info")
-    public UserInfo getUserInfo(Principal principal) {
+    public ResponseResult getUserInfo(Principal principal) {
         if (principal == null) {
             return null;
         }
         String username = principal.getName();
-        UserInfo user = redisCache.getCacheObject(clientLoginKey + username);
+        User user = redisCache.getCacheObject(clientLoginKey + username);
         user.setPassword(null);
-        return user;
+        return ResponseResult.success(user);
     }
 
     @ApiOperation(value = "注册用户")
     @PostMapping("/register")
-    public RespBeanModel regUser(@RequestBody UserInfo userInfo, String code) {
-        return userService.clientRegister(userInfo, code);
+    public ResponseResult regUser(@RequestBody User user, String code) {
+        User data = userService.clientRegister(user, code);
+        if (data != null) {
+            return ResponseResult.success("注册成功", data);
+        }
+        return ResponseResult.error("注册失败", null);
     }
 
     @ApiOperation(value = "修改密码")
     @PutMapping("/update/password")
-    public RespBeanModel editPsw(@RequestBody EditPasswordModel model) {
+    public ResponseResult editPsw(@RequestBody PasswordVo model) {
         return userService.updatePassword(model);
     }
 
     @ApiOperation(value = "更新用户信息")
     @PutMapping("/update/user")
-    public RespBeanModel updateUser(@RequestBody EditUserInfoModel model) {
-        Boolean updateResult = userService.update(model, clientLoginKey);
+    public ResponseResult updateUser(@RequestBody UserVo userVo) {
+        Boolean updateResult = userService.updateUser(userVo, clientLoginKey);
         if (updateResult) {
-            return RespBeanModel.success("更新数据成功");
+            return ResponseResult.success("更新数据成功");
         } else {
-            return RespBeanModel.error("更新数据失败");
+            return ResponseResult.error("更新数据失败");
         }
     }
 
     @ApiOperation(value = "分页查询用户（不包含登录用户）")
     @GetMapping("/search/page")
-    public RespPageBeanModel search(@RequestParam(defaultValue = "1") Integer currentPage,
-                                    @RequestParam(defaultValue = "3") Integer size,
-                                    Principal principal,
-                                    QueryUserModel model) {
+    public PageResponseResult search(@RequestParam(defaultValue = "1") Integer currentPage,
+                                     @RequestParam(defaultValue = "3") Integer size,
+                                     Principal principal,
+                                     QueryUserVo model) {
         return userService.selectUserListByPage(currentPage, size, principal, model, "client");
     }
 
     @Deprecated
     @ApiOperation(value = "普通查询用户")
     @GetMapping("/search/no-page")
-    public List<UserInfo> search(Principal principal, QueryUserModel model) {
+    public List<User> search(Principal principal, QueryUserVo model) {
         return userService.selectUserList(principal, model);
     }
 

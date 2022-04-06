@@ -1,6 +1,6 @@
 package com.li2n.im_server.exception;
 
-import com.li2n.im_server.pojo.model.RespBeanModel;
+import com.li2n.im_server.vo.ResponseResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -19,11 +19,11 @@ import java.sql.SQLIntegrityConstraintViolationException;
 public class GlobalException {
 
     @ExceptionHandler(SQLException.class)
-    public RespBeanModel mySqlException(SQLException e) {
+    public ResponseResult mySqlException(SQLException e) {
         if (e instanceof SQLIntegrityConstraintViolationException) {
-            return RespBeanModel.error("该数据有关联数据，操作失败", e.toString());
+            return ResponseResult.error("该数据有关联数据，操作失败", e.toString());
         }
-        return RespBeanModel.error("数据库异常，操作失败", e.toString());
+        return ResponseResult.error("数据库异常：" + e.getMessage(), e.toString());
     }
 
 }

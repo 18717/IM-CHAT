@@ -1,8 +1,8 @@
 package com.li2n.im_server.controller;
 
-import com.li2n.im_server.pojo.model.LoginModel;
-import com.li2n.im_server.pojo.model.RespBeanModel;
-import com.li2n.im_server.service.IUserInfoService;
+import com.li2n.im_server.entity.User;
+import com.li2n.im_server.service.IUserService;
+import com.li2n.im_server.vo.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,17 +23,17 @@ import javax.servlet.http.HttpServletRequest;
 public class LoginController {
 
     @Autowired
-    private IUserInfoService userService;
+    private IUserService userService;
 
     @ApiOperation(value = "客户端登录")
     @PostMapping("/client")
-    public RespBeanModel clientLogin(@RequestBody LoginModel model, HttpServletRequest request) {
-        return userService.clientLogin(model, request);
+    public ResponseResult clientLogin(@RequestBody User user) {
+        return userService.clientLogin(user);
     }
 
     @ApiOperation(value = "服务端登录")
     @PostMapping("/server")
-    public RespBeanModel serverLogin(@RequestBody LoginModel model, HttpServletRequest request) {
-        return userService.serverLogin(model, request);
+    public ResponseResult serverLogin(@RequestBody User user) {
+        return userService.serverLogin(user);
     }
 }

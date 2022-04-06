@@ -1,14 +1,16 @@
 package com.li2n.im_server.controller;
 
 
-import com.li2n.im_server.pojo.model.RespBeanModel;
-import com.li2n.im_server.service.IUserInfoService;
+import com.li2n.im_server.service.IUserService;
 import com.li2n.im_server.utils.QiniuUpload;
+import com.li2n.im_server.vo.ResponseResult;
 import com.qiniu.common.Zone;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 /**
  * <p>
@@ -23,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CommonController {
 
     @Autowired
-    private IUserInfoService userService;
+    private IUserService userService;
 
     @ApiOperation(value = "检查用户名是否已经存在")
     @GetMapping("/check/username/{username}")
@@ -33,11 +35,11 @@ public class CommonController {
 
     @ApiOperation(value = "上传文件")
     @PostMapping("/upload/file")
-    public RespBeanModel uploadQiniu(MultipartFile file, @RequestParam("type") String type) {
+    public ResponseResult uploadQiniu(MultipartFile file, @RequestParam("type") String type) {
         String folder = "im_" + type + "/";
-        String saveFile = QiniuUpload.updateFile(file, Zone.zone2(), QiniuUpload.getUploadCredential(), file.getOriginalFilename(), folder);
+        String saveFile = QiniuUpload.updateFile(file, Zone.zone2(), QiniuUpload.getUploadCredential(), Objects.requireNonNull(file.getOriginalFilename()), folder);
         String url = QiniuUpload.publicFile(saveFile);
-        return RespBeanModel.success("上传成功", url);
+        return ResponseResult.success("上传成功", url);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.li2n.im_server.config.security;
 
-import com.li2n.im_server.pojo.UserInfo;
+import com.li2n.im_server.entity.User;
 import com.li2n.im_server.utils.RedisCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +54,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             String username = jwtTokenUtil.getUserNameFromToken(authToken);
             // 从redis中获取用户信息
             String redisKey = "login:" + username;
-            UserInfo cacheUser = redisCache.getCacheObject(redisKey);
+            User cacheUser = redisCache.getCacheObject(redisKey);
             if (Objects.isNull(cacheUser)) {
                 filterChain.doFilter(request, response);
                 return;
